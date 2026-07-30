@@ -1,36 +1,50 @@
-export default function Background() {
+import Container from "../common/Container";
+
+export default function Navbar() {
   return (
-    <>
-      {/* Base Background */}
-      <div className="fixed inset-0 -z-50 bg-[#050816]" />
+    <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-[#050816]/70 backdrop-blur-xl">
+      <Container>
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <a
+            href="#"
+            className="text-lg font-bold tracking-[0.2em] text-white transition hover:text-sky-400"
+          >
+            SURAJ DIAS
+          </a>
 
-      {/* Blue Glow */}
-      <div
-        className="
-          fixed
-          left-1/2
-          top-0
-          -z-40
-          h-[600px]
-          w-[600px]
-          -translate-x-1/2
-          rounded-full
-          bg-blue-500/10
-          blur-[140px]
-        "
-      />
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
+            <a
+              href="#about"
+              className="transition-colors duration-300 hover:text-white"
+            >
+              About
+            </a>
 
-      {/* Grid */}
-      <div
-        className="
-          fixed
-          inset-0
-          -z-30
-          opacity-[0.04]
-          bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)]
-          bg-[size:60px_60px]
-        "
-      />
-    </>
+            <a
+              href="#projects"
+              className="transition-colors duration-300 hover:text-white"
+            >
+              Projects
+            </a>
+
+            <a
+              href="#tech"
+              className="transition-colors duration-300 hover:text-white"
+            >
+              Tech Stack
+            </a>
+
+            <a
+              href="#contact"
+              className="transition-colors duration-300 hover:text-white"
+            >
+              Contact
+            </a>
+          </nav>
+        </div>
+      </Container>
+    </header>
   );
 }
