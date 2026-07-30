@@ -12,6 +12,7 @@ export default function Background() {
         className="fixed -left-48 -top-40 -z-40 h-[46rem] w-[46rem] rounded-full bg-blue-600 blur-[180px]"
       />
       <div className="fixed right-[-16rem] top-[28rem] -z-40 h-[40rem] w-[40rem] rounded-full bg-sky-500/[0.08] blur-[150px]" />
+      <div className="pointer-events-none fixed inset-0 -z-35 bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(5,8,22,.3)_100%)]" />
       <div
         className="fixed inset-0 -z-30 opacity-[0.035] [background-image:linear-gradient(to_right,#94a3b8_1px,transparent_1px),linear-gradient(to_bottom,#94a3b8_1px,transparent_1px)] [background-size:72px_72px]"
       />
