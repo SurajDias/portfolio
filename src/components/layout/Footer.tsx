@@ -1,0 +1,2 @@
+import Container from "../common/Container";
+export default function Footer() { return <footer className="border-t border-white/[.07] py-7"><Container><div className="flex flex-col justify-between gap-3 text-xs text-slate-500 sm:flex-row"><p>© {new Date().getFullYear()} Suraj Dias. Built with intent.</p><div className="flex gap-5"><a href="#top" className="hover:text-slate-300">Back to top ↑</a><a href="mailto:hello@surajdias.dev" className="hover:text-slate-300">Email</a></div></div></Container></footer>; }
