@@ -3,7 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Container from "../common/Container";
 
-const links = ["About", "Projects", "Tech Stack", "Contact"];
+const links = ["About", "Projects", "Tech Stack", "Certifications", "Contact"];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export default function Navbar() {
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       setProgress(maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0);
     };
-    const sections = ["top", "about", "projects", "tech", "contact"]
+    const sections = ["top", "about", "projects", "tech", "certifications", "contact"]
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => Boolean(section));
     const observer = new IntersectionObserver((entries) => {
@@ -92,7 +92,7 @@ export default function Navbar() {
     setOpen((isOpen) => !isOpen);
   };
 
-  return <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? "border-b border-white/[.08] bg-[#050816]/75 shadow-[0_10px_30px_rgba(0,0,0,.08)] backdrop-blur-xl" : "bg-transparent"}`}>
+  return <header className={`fixed top-0 z-50 w-full transition-all duration-[280ms] ${scrolled ? "border-b border-white/[.08] bg-[#050816]/75 shadow-[0_10px_30px_rgba(0,0,0,.08)] backdrop-blur-xl" : "bg-transparent"}`}>
     <motion.div aria-hidden="true" className="absolute bottom-0 left-0 h-px origin-left bg-gradient-to-r from-sky-300 via-blue-500 to-transparent" style={{ width: `${progress}%` }} />
     <Container><div className="flex h-[72px] items-center justify-between">
       <a href="#top" aria-label="Suraj Dias, back to top" className="text-sm font-semibold tracking-[.18em] text-white transition hover:text-sky-300">SURAJ<span className="text-sky-400">.</span></a>

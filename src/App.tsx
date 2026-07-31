@@ -8,6 +8,7 @@ import Container from "./components/common/Container";
 
 const Projects = lazy(() => import("./sections/Projects"));
 const TechStack = lazy(() => import("./sections/TechStack"));
+const Certifications = lazy(() => import("./sections/Certifications"));
 const About = lazy(() => import("./sections/About"));
 const Contact = lazy(() => import("./sections/Contact"));
 
@@ -23,6 +24,7 @@ function App() {
         <Suspense fallback={<SectionLoadingFallback />}>
           <Projects />
           <TechStack />
+          <Certifications />
           <About />
           <Contact />
         </Suspense>
