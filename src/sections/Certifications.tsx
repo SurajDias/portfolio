@@ -45,10 +45,10 @@ export default function Certifications() {
                 variant="secondary"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`View ${certification.name} credential on ${certification.issuer} (verification link to be added)`}
+                aria-label={`${certification.buttonLabel}: ${certification.name} by ${certification.issuer}`}
                 className="mt-auto w-fit px-3.5 py-2 text-xs"
               >
-                View Credential <ArrowUpRight size={15} aria-hidden="true" />
+                {certification.buttonLabel} <ArrowUpRight size={15} aria-hidden="true" />
               </Button>
             </motion.article>
           ))}

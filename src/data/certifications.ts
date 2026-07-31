@@ -3,38 +3,44 @@ export type Certification = {
   issuer: string;
   /** Official issuer mark, supplied as a monochrome SVG to suit the existing palette. */
   issuerLogoUrl: string;
-  /** Replace this placeholder with the credential's public verification URL when available. */
   credentialUrl: string;
+  buttonLabel: string;
   verified: true;
 };
 
 const issuerLogo = (slug: string) => `https://cdn.simpleicons.org/${slug}/CBD5E1`;
-const credentialPlaceholder = "https://example.com/credentials";
 
-/**
- * Add newly earned credentials here. Keep `credentialUrl` pointed at the
- * issuer's public verification page once it is available.
- */
 export const certifications = [
   {
     name: "Introduction to Cybersecurity",
     issuer: "Cisco",
     issuerLogoUrl: issuerLogo("cisco"),
-    credentialUrl: credentialPlaceholder,
+    credentialUrl: "https://www.credly.com/badges/93edfa09-eb97-470f-ae0a-02e9c3eed402/public_url",
+    buttonLabel: "View Credential",
     verified: true,
   },
   {
     name: "Generative AI with Large Language Models",
-    issuer: "Coursera",
+    issuer: "DeepLearning.AI × AWS",
     issuerLogoUrl: issuerLogo("coursera"),
-    credentialUrl: credentialPlaceholder,
+    credentialUrl: "https://coursera.org/verify/E25AAH8PTEUX",
+    buttonLabel: "View Credential",
     verified: true,
   },
   {
     name: "Data Science Math Skills",
-    issuer: "Coursera",
+    issuer: "Duke University",
     issuerLogoUrl: issuerLogo("coursera"),
-    credentialUrl: credentialPlaceholder,
+    credentialUrl: "https://coursera.org/verify/H8Z8V4ELE4BE",
+    buttonLabel: "View Credential",
+    verified: true,
+  },
+  {
+    name: "Gen AI & Cloud Computing Internship",
+    issuer: "IBM SkillsBuild × AICTE × BharatCares",
+    issuerLogoUrl: "https://upload.wikimedia.org/wikipedia/commons/a/ac/E7d58cab3f88684f9f8f_ibm_skillsbuild.svg",
+    credentialUrl: "https://skills.yourlearning.ibm.com/activity/PLAN-0E0A390A619F",
+    buttonLabel: "View Program",
     verified: true,
   },
 ] as const satisfies readonly Certification[];
