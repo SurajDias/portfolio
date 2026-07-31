@@ -70,4 +70,20 @@ export const MiniCompilerArchitecture = {
   packets: [["source", "lexer", 0], ["lexer", "parser", 1.1], ["parser", "ast", 2.2], ["ast", "semantic", 3.3], ["semantic", "codegen", 4.2]],
 } as const satisfies ProjectArchitecture;
 
-export const projectArchitectures = [AutoOpsProArchitecture, PlacementPilotArchitecture, MiniCompilerArchitecture] as const;
+export const CustomerChurnArchitecture = {
+  name: "Customer Churn Intelligence",
+  shortName: "Customer Churn",
+  focus: "Retention intelligence",
+  nodes: [
+    { id: "dataset", label: "Customer Dataset", detail: "Brings together behavioral, account, and retention signals.", x: 72, y: 160 },
+    { id: "cleaning", label: "Data Cleaning", detail: "Prepares consistent, reliable records for analysis.", x: 210, y: 88, accent: "blue" },
+    { id: "features", label: "Feature Engineering", detail: "Builds useful signals from customer behaviour.", x: 245, y: 231, accent: "violet" },
+    { id: "training", label: "Model Training", detail: "Trains and evaluates the churn prediction model.", x: 430, y: 88, accent: "amber" },
+    { id: "prediction", label: "Churn Prediction", detail: "Scores customers by their likelihood to churn.", x: 442, y: 230, accent: "green" },
+    { id: "dashboard", label: "Business Dashboard", detail: "Turns model insights into retention actions.", x: 598, y: 158, accent: "blue" },
+  ],
+  links: [["dataset", "cleaning"], ["cleaning", "features"], ["features", "training"], ["training", "prediction"], ["prediction", "dashboard"]],
+  packets: [["dataset", "cleaning", 0], ["cleaning", "features", 1.1], ["features", "training", 2.2], ["training", "prediction", 3.3], ["prediction", "dashboard", 4.2]],
+} as const satisfies ProjectArchitecture;
+
+export const projectArchitectures = [AutoOpsProArchitecture, PlacementPilotArchitecture, MiniCompilerArchitecture, CustomerChurnArchitecture] as const;

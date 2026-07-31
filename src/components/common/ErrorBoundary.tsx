@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <p className="text-[11px] font-medium uppercase tracking-[.2em] text-sky-300">Portfolio unavailable</p>
             <h1 className="mt-4 text-3xl font-semibold tracking-[-.04em]">Something went wrong.</h1>
             <p className="mt-4 leading-7 text-slate-400">Please refresh the page. If the issue continues, contact me by email.</p>
-            <a href="mailto:hello@surajdias.dev" className="mt-7 inline-flex rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-500">Email Suraj</a>
+            <a href="mailto:hello@surajdias.dev" className="interactive-button mt-7 inline-flex rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] hover:bg-blue-500 hover:shadow-[0_14px_28px_rgba(37,99,235,0.3)]">Email Suraj</a>
           </div>
         </main>
       );

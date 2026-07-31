@@ -21,6 +21,10 @@ body {
 
 * { box-sizing: border-box; }
 
+body, #root { min-width: 320px; }
+
+button, a { touch-action: manipulation; }
+
 :focus-visible {
   outline: 2px solid #7dd3fc;
   outline-offset: 4px;
@@ -35,4 +39,106 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 .noise {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+}
+
+.tech-marquees {
+  display: grid;
+  gap: 0.875rem;
+  padding: 0.25rem 0;
+}
+
+.tech-marquee {
+  overflow: hidden;
+  padding: 0.375rem 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+}
+
+.tech-marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: tech-marquee-left 34s linear infinite;
+}
+
+.tech-marquee__track--right { animation-name: tech-marquee-right; }
+.tech-marquee:hover .tech-marquee__track,
+.tech-marquee:focus-within .tech-marquee__track { animation-play-state: paused; }
+
+.tech-marquee__set {
+  display: flex;
+  flex: none;
+  gap: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.tech-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.028);
+  padding: 0.7rem 0.95rem;
+  color: #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1), transform 280ms cubic-bezier(.22, 1, .36, 1), color 280ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.tech-card img { flex: none; opacity: 0.88; transition: transform 280ms cubic-bezier(.22, 1, .36, 1); }
+.tech-card:hover, .tech-card:focus-within {
+  transform: scale(1.035);
+  border-color: rgba(125, 211, 252, 0.32);
+  background: rgba(56, 189, 248, 0.055);
+  box-shadow: 0 7px 18px rgba(14, 116, 144, 0.12);
+  color: #e0f2fe;
+}
+.tech-card:hover img, .tech-card:focus-within img { transform: scale(1.06); }
+
+.interactive-button {
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1), color 280ms cubic-bezier(.22, 1, .36, 1);
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .interactive-button:hover { transform: translateY(-2px); }
+}
+
+.interactive-button:active { transform: translateY(0) scale(.985); }
+
+.project-card {
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
+}
+
+@media (hover: hover) {
+  .project-card:hover, .project-card:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(125, 211, 252, .2);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, .14);
+  }
+  .project-card:hover .project-preview, .project-card:focus-within .project-preview { transform: scale(1.02); }
+}
+
+.project-preview { transition: transform 280ms cubic-bezier(.22, 1, .36, 1); }
+
+@keyframes tech-marquee-left { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes tech-marquee-right { from { transform: translate3d(-50%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  .tech-marquee__track { animation-duration: 42s; }
+}
+
+@media (max-width: 767px) {
+  .tech-marquee__track { animation-duration: 48s; }
+  .tech-card { padding: 0.65rem 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tech-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .tech-marquee__track { width: auto; animation: none; }
+  .tech-marquee__set[aria-hidden="true"] { display: none; }
+  .interactive-button:active, .project-card:hover, .project-card:focus-within, .tech-card:hover, .tech-card:focus-within { transform: none; }
 }
