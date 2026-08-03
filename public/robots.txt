@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://surajdias.dev/sitemap.xml
+Sitemap: www.surajdias.tech/sitemap.xml
