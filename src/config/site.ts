@@ -6,3 +6,6 @@ export const RESUME_URL = `${import.meta.env.BASE_URL}resume/Suraj_Dias_Resume.p
 
 /** Public LinkedIn profile for the portfolio owner. */
 export const LINKEDIN_URL = "https://linkedin.com/in/thesurajdias";
+
+/** Public email address for the portfolio owner. */
+export const EMAIL = "diassuraj13@gmail.com";
