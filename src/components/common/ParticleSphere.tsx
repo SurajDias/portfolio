@@ -94,10 +94,10 @@ export default function ParticleSphere() {
 
       // The diffuse center glow makes the point cloud feel like a single volume,
       // while the points themselves retain the detail of its surface.
-      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.22);
-      glow.addColorStop(0, "rgba(168, 85, 247, 0.16)");
-      glow.addColorStop(0.26, "rgba(139, 92, 246, 0.095)");
-      glow.addColorStop(0.62, "rgba(56, 189, 248, 0.035)");
+      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.28);
+      glow.addColorStop(0, "rgba(168, 85, 247, 0.18)");
+      glow.addColorStop(0.26, "rgba(139, 92, 246, 0.108)");
+      glow.addColorStop(0.62, "rgba(56, 189, 248, 0.04)");
       glow.addColorStop(1, "rgba(139, 92, 246, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
@@ -204,7 +204,7 @@ export default function ParticleSphere() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className={`pointer-events-none absolute -left-12 -top-8 z-0 h-[min(660px,82%)] w-[min(720px,72vw)] origin-center [-webkit-mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] [mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none lg:-left-24 lg:w-[min(720px,58vw)] ${hasEntered ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
+      className={`pointer-events-none absolute -left-12 top-1/2 z-0 h-[min(660px,82%)] w-[min(720px,72vw)] -translate-y-1/2 origin-center [-webkit-mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] [mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none lg:-left-24 lg:w-[min(720px,58vw)] ${hasEntered ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
     />
   );
 }

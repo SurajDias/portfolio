@@ -11,7 +11,7 @@ const badges = ["Open to internships", "AI", "Linux", "Full Stack"];
 
 function ArchitecturePanel() {
   return (
-    <div className="relative mx-auto w-full max-w-[620px]">
+    <div className="relative mx-auto w-full max-w-[680px]">
       <TopologyGraph />
     </div>
   );
@@ -30,8 +30,8 @@ export default function Hero() {
       />
       <div className="relative z-10 w-full">
         <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-[.95fr_1.05fr] lg:gap-14">
-          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="relative isolate z-10 before:absolute before:-inset-x-6 before:-inset-y-7 before:-z-10 before:rounded-2xl before:border before:border-sky-200/[.13] before:bg-sky-400/[.045] before:shadow-[inset_0_1px_0_rgba(255,255,255,.10),0_20px_48px_rgba(2,6,23,.30)] before:backdrop-blur-md sm:before:-inset-x-7">
+          <div className="grid items-center gap-12 lg:translate-x-6 lg:grid-cols-[.88fr_1.12fr] lg:gap-20">
+          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="relative isolate z-10 before:absolute before:-inset-x-6 before:-inset-y-7 before:-z-10 before:rounded-2xl before:border before:border-sky-200/[.10] before:bg-sky-400/[.035] before:shadow-[inset_0_1px_0_rgba(255,255,255,.10),0_20px_48px_rgba(2,6,23,.30)] before:backdrop-blur-md sm:before:-inset-x-7">
             <motion.div variants={fadeUp}>
               <div className="mb-6 flex items-center gap-3 text-[11px] font-medium uppercase tracking-[.22em] text-sky-300"><span className="h-px w-8 bg-sky-400" /> Software Engineer</div>
               <h1 className="text-5xl font-semibold leading-[.98] tracking-[-.055em] text-slate-50 sm:text-6xl lg:text-7xl">Suraj Dias</h1>
