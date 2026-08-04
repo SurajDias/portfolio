@@ -43,6 +43,7 @@ export default function Hero() {
 
       <div className="relative z-10 w-full">
         <Container>
+          {/* Only change: Architecture column gets more space */}
           <div className="grid items-center gap-12 lg:translate-x-6 lg:grid-cols-[.62fr_1.38fr] lg:gap-28">
             <motion.div
               initial="hidden"
@@ -88,10 +89,10 @@ export default function Hero() {
 
               <motion.div
                 variants={fadeUp}
-                className="mt-9 flex flex-wrap gap-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:items-stretch"
+                className="mt-9 flex flex-wrap gap-3"
               >
                 <Button
-                  className="transition-[background-color,box-shadow] duration-300 ease-out lg:w-full hover:shadow-[0_14px_30px_rgba(56,189,248,0.24)]"
+                  className="transition-[background-color,box-shadow] duration-300 ease-out hover:shadow-[0_14px_30px_rgba(56,189,248,0.24)]"
                   href={RESUME_URL}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -102,7 +103,7 @@ export default function Hero() {
                 </Button>
 
                 <Button
-                  className="transition-[background-color,border-color,box-shadow] duration-300 ease-out lg:w-full hover:shadow-[0_12px_26px_rgba(14,116,144,0.14)]"
+                  className="transition-[background-color,border-color,box-shadow] duration-300 ease-out hover:shadow-[0_12px_26px_rgba(14,116,144,0.14)]"
                   href="https://github.com/surajdias"
                   variant="secondary"
                 >
@@ -111,7 +112,7 @@ export default function Hero() {
                 </Button>
 
                 <Button
-                  className="transition-[background-color,border-color,box-shadow] duration-300 ease-out lg:w-full hover:shadow-[0_12px_26px_rgba(14,116,144,0.14)]"
+                  className="transition-[background-color,border-color,box-shadow] duration-300 ease-out hover:shadow-[0_12px_26px_rgba(14,116,144,0.14)]"
                   href={LINKEDIN_URL}
                   variant="secondary"
                   target="_blank"
@@ -124,7 +125,7 @@ export default function Hero() {
 
                 <a
                   href="#contact"
-                  className="interactive-button inline-flex items-center gap-2 px-3 py-3 text-sm font-medium text-slate-400 hover:text-sky-200 lg:w-full lg:justify-center"
+                  className="interactive-button inline-flex items-center gap-2 px-3 py-3 text-sm font-medium text-slate-400 hover:text-sky-200"
                 >
                   Contact
                   <ArrowUpRight size={15} />
