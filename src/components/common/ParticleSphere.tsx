@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useReducedMotion from "../../hooks/useReducedMotion";
 
 type SpherePoint = {
@@ -8,7 +8,7 @@ type SpherePoint = {
   color: "#38bdf8" | "#a78bfa";
 };
 
-const POINT_COUNT = 240;
+const POINT_COUNT = 520;
 const ROTATION_DURATION = 75_000;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
@@ -32,6 +32,17 @@ export default function ParticleSphere() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = useReducedMotion();
   const points = useMemo(createSpherePoints, []);
+  const [hasEntered, setHasEntered] = useState(reducedMotion);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setHasEntered(true);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => setHasEntered(true));
+    return () => cancelAnimationFrame(frame);
+  }, [reducedMotion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -55,33 +66,55 @@ export default function ParticleSphere() {
       const rotation = (elapsed / ROTATION_DURATION) * Math.PI * 2;
       const cosine = Math.cos(rotation);
       const sine = Math.sin(rotation);
-      const sphereRadius = Math.min(width * 0.42, height * 0.45);
-      const centerX = width * 0.52;
-      const centerY = height * 0.5;
+      const sphereRadius = Math.min(width * 0.38, height * 0.42);
+      const centerX = width * 0.5;
+      const centerY = height * 0.48;
 
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
 
-      for (const point of points) {
+      // The diffuse center glow makes the point cloud feel like a single volume,
+      // while the points themselves retain the detail of its surface.
+      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.15);
+      glow.addColorStop(0, "rgba(56, 189, 248, 0.12)");
+      glow.addColorStop(0.38, "rgba(167, 139, 250, 0.055)");
+      glow.addColorStop(1, "rgba(56, 189, 248, 0)");
+      context.fillStyle = glow;
+      context.fillRect(0, 0, width, height);
+
+      const projectedPoints = points.map((point) => {
         const rotatedX = point.x * cosine + point.z * sine;
         const rotatedZ = point.z * cosine - point.x * sine;
-        const perspective = 3 / (3 - rotatedZ);
-        const depth = (perspective - 0.75) / 0.75;
+        const depth = (rotatedZ + 1) / 2;
+        const perspective = 0.88 + depth * 0.24;
+
+        return { point, rotatedX, depth, perspective };
+      });
+
+      // Draw the far hemisphere first. Depth controls both size and alpha so the
+      // rotation reads as a volumetric sphere rather than a flat star field.
+      projectedPoints.sort((a, b) => a.depth - b.depth);
+
+      for (const { point, rotatedX, depth, perspective } of projectedPoints) {
+        const size = 0.8 + depth * 1.7;
 
         context.beginPath();
         context.arc(
           centerX + rotatedX * sphereRadius * perspective,
           centerY + point.y * sphereRadius * perspective,
-          0.75 + depth * 0.45,
+          size,
           0,
           Math.PI * 2,
         );
         context.fillStyle = point.color;
-        context.globalAlpha = 0.16 + depth * 0.1;
+        context.globalAlpha = 0.1 + depth * 0.5;
+        context.shadowColor = point.color;
+        context.shadowBlur = depth > 0.72 ? 5 * depth : 0;
         context.fill();
       }
 
       context.globalAlpha = 1;
+      context.shadowBlur = 0;
     };
 
     const resize = () => {
@@ -138,5 +171,11 @@ export default function ParticleSphere() {
     };
   }, [points, reducedMotion]);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 h-full w-full" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className={`pointer-events-none absolute -left-12 -top-8 z-0 h-[min(660px,82%)] w-[min(720px,72vw)] origin-center [-webkit-mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] [mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none lg:-left-24 lg:w-[min(720px,58vw)] ${hasEntered ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
+    />
+  );
 }
