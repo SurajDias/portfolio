@@ -1,6 +1,7 @@
 import { ArrowDownToLine, ArrowUpRight, Code2, Mail } from "lucide-react";
 import { motion } from "motion/react";
 import Container from "../components/common/Container";
+import ParticleSphere from "../components/common/ParticleSphere";
 import TopologyGraph from "../components/visuals/TopologyGraph";
 import Button from "../components/ui/Button";
 import { EMAIL, LINKEDIN_URL, RESUME_URL } from "../config/site";
@@ -19,6 +20,7 @@ function ArchitecturePanel() {
 export default function Hero() {
   return (
     <section id="top" className="relative isolate flex min-h-[min(900px,100svh)] items-center overflow-hidden pb-16 pt-28 sm:pt-32 lg:pb-20 lg:pt-24">
+      <ParticleSphere />
       <motion.div
         aria-hidden="true"
         animate={{ x: [-24, 24, -24], y: [-18, 18, -18] }}
