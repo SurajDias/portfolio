@@ -94,10 +94,12 @@ export default function ParticleSphere() {
 
       // The diffuse center glow makes the point cloud feel like a single volume,
       // while the points themselves retain the detail of its surface.
-      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.28);
-      glow.addColorStop(0, "rgba(168, 85, 247, 0.18)");
-      glow.addColorStop(0.26, "rgba(139, 92, 246, 0.108)");
-      glow.addColorStop(0.62, "rgba(56, 189, 248, 0.04)");
+      // Stronger, wider purple bloom with an extra stop for a smoother falloff.
+      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.42);
+      glow.addColorStop(0, "rgba(176, 85, 247, 0.30)");
+      glow.addColorStop(0.22, "rgba(147, 92, 246, 0.16)");
+      glow.addColorStop(0.5, "rgba(96, 140, 247, 0.07)");
+      glow.addColorStop(0.75, "rgba(56, 189, 248, 0.03)");
       glow.addColorStop(1, "rgba(139, 92, 246, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
@@ -116,12 +118,12 @@ export default function ParticleSphere() {
       projectedPoints.sort((a, b) => a.depth - b.depth);
 
       for (const { point, rotatedX, depth, perspective } of projectedPoints) {
-        // Screen-space colour blends from cyan on the left through violet to
-        // magenta on the right; depth then controls the perceived volume.
-        const blend = Math.min(1, Math.max(0, rotatedX * 0.5 + 0.5));
-        const red = Math.round((56 + (192 - 56) * blend) * point.brightness);
-        const green = Math.round((189 + (132 - 189) * blend) * point.brightness);
-        const blue = Math.round((248 + (252 - 248) * blend) * point.brightness);
+        // Colour blend keyed to vertical position (not rotation), so the sphere
+        // holds a stable cyan-base to magenta-crown gradient as it spins.
+        const blend = Math.min(1, Math.max(0, (1 - point.y) * 0.5));
+        const red = Math.round((56 + (196 - 56) * blend) * point.brightness);
+        const green = Math.round((189 + (96 - 189) * blend) * point.brightness);
+        const blue = Math.round((248 + (247 - 248) * blend) * point.brightness);
         const color = `rgb(${red}, ${green}, ${blue})`;
         const size = point.size * (0.68 + depth * 1.35);
 
@@ -204,7 +206,7 @@ export default function ParticleSphere() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className={`pointer-events-none absolute -left-12 top-1/2 z-0 h-[min(660px,82%)] w-[min(720px,72vw)] -translate-y-1/2 origin-center [-webkit-mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] [mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_52%,transparent_100%)] transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none lg:-left-24 lg:w-[min(720px,58vw)] ${hasEntered ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
+      className={`pointer-events-none absolute -left-16 top-1/2 z-0 h-[min(720px,88%)] w-[min(780px,76vw)] -translate-y-1/2 origin-center [-webkit-mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_38%,rgba(0,0,0,.45)_70%,transparent_100%)] [mask-image:radial-gradient(ellipse_at_center,#000_0%,#000_38%,rgba(0,0,0,.45)_70%,transparent_100%)] transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none lg:-left-32 lg:w-[min(780px,62vw)] ${hasEntered ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
     />
   );
 }
