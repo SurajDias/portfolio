@@ -5,24 +5,35 @@ type SpherePoint = {
   x: number;
   y: number;
   z: number;
-  color: "#38bdf8" | "#a78bfa";
+  size: number;
+  brightness: number;
+  alpha: number;
 };
 
 const POINT_COUNT = 520;
 const ROTATION_DURATION = 75_000;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
+function noise(index: number, offset = 0) {
+  const value = Math.sin((index + 1) * 12.9898 + offset * 78.233) * 43758.5453;
+  return value - Math.floor(value);
+}
+
 function createSpherePoints(): SpherePoint[] {
   return Array.from({ length: POINT_COUNT }, (_, index) => {
-    const vertical = 1 - (index / (POINT_COUNT - 1)) * 2;
+    // Keep the even coverage of a Fibonacci sphere, then introduce a tiny,
+    // deterministic irregularity so it reads as a cloud rather than a grid.
+    const vertical = Math.max(-1, Math.min(1, 1 - (index / (POINT_COUNT - 1)) * 2 + (noise(index, 1) - 0.5) * 0.045));
     const radius = Math.sqrt(1 - vertical * vertical);
-    const angle = index * GOLDEN_ANGLE;
+    const angle = index * GOLDEN_ANGLE + (noise(index, 2) - 0.5) * 0.18;
 
     return {
       x: Math.cos(angle) * radius,
       y: vertical,
       z: Math.sin(angle) * radius,
-      color: index % 5 < 3 ? "#38bdf8" : "#a78bfa",
+      size: 0.72 + noise(index, 3) * 1.15,
+      brightness: 0.76 + noise(index, 4) * 0.42,
+      alpha: 0.72 + noise(index, 5) * 0.28,
     };
   });
 }
@@ -33,6 +44,7 @@ export default function ParticleSphere() {
   const reducedMotion = useReducedMotion();
   const points = useMemo(createSpherePoints, []);
   const [hasEntered, setHasEntered] = useState(reducedMotion);
+  const pointer = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
 
   useEffect(() => {
     if (reducedMotion) {
@@ -59,6 +71,11 @@ export default function ParticleSphere() {
     let width = 0;
     let height = 0;
 
+    const handlePointerMove = (event: PointerEvent) => {
+      pointer.current.targetX = (event.clientX / window.innerWidth - 0.5) * 2;
+      pointer.current.targetY = (event.clientY / window.innerHeight - 0.5) * 2;
+    };
+
     const draw = () => {
       if (!width || !height) return;
 
@@ -67,18 +84,21 @@ export default function ParticleSphere() {
       const cosine = Math.cos(rotation);
       const sine = Math.sin(rotation);
       const sphereRadius = Math.min(width * 0.38, height * 0.42);
-      const centerX = width * 0.5;
-      const centerY = height * 0.48;
+      pointer.current.x += (pointer.current.targetX - pointer.current.x) * 0.025;
+      pointer.current.y += (pointer.current.targetY - pointer.current.y) * 0.025;
+      const centerX = width * 0.5 + pointer.current.x * 7;
+      const centerY = height * 0.48 + pointer.current.y * 5;
 
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
 
       // The diffuse center glow makes the point cloud feel like a single volume,
       // while the points themselves retain the detail of its surface.
-      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.15);
-      glow.addColorStop(0, "rgba(56, 189, 248, 0.12)");
-      glow.addColorStop(0.38, "rgba(167, 139, 250, 0.055)");
-      glow.addColorStop(1, "rgba(56, 189, 248, 0)");
+      const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, sphereRadius * 1.22);
+      glow.addColorStop(0, "rgba(168, 85, 247, 0.16)");
+      glow.addColorStop(0.26, "rgba(139, 92, 246, 0.095)");
+      glow.addColorStop(0.62, "rgba(56, 189, 248, 0.035)");
+      glow.addColorStop(1, "rgba(139, 92, 246, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
 
@@ -96,7 +116,14 @@ export default function ParticleSphere() {
       projectedPoints.sort((a, b) => a.depth - b.depth);
 
       for (const { point, rotatedX, depth, perspective } of projectedPoints) {
-        const size = 0.8 + depth * 1.7;
+        // Screen-space colour blends from cyan on the left through violet to
+        // magenta on the right; depth then controls the perceived volume.
+        const blend = Math.min(1, Math.max(0, rotatedX * 0.5 + 0.5));
+        const red = Math.round((56 + (192 - 56) * blend) * point.brightness);
+        const green = Math.round((189 + (132 - 189) * blend) * point.brightness);
+        const blue = Math.round((248 + (252 - 248) * blend) * point.brightness);
+        const color = `rgb(${red}, ${green}, ${blue})`;
+        const size = point.size * (0.68 + depth * 1.35);
 
         context.beginPath();
         context.arc(
@@ -106,10 +133,10 @@ export default function ParticleSphere() {
           0,
           Math.PI * 2,
         );
-        context.fillStyle = point.color;
-        context.globalAlpha = 0.1 + depth * 0.5;
-        context.shadowColor = point.color;
-        context.shadowBlur = depth > 0.72 ? 5 * depth : 0;
+        context.fillStyle = color;
+        context.globalAlpha = (0.08 + depth * 0.58) * point.alpha;
+        context.shadowColor = color;
+        context.shadowBlur = depth > 0.66 ? 4.5 * depth : 0;
         context.fill();
       }
 
@@ -161,6 +188,7 @@ export default function ParticleSphere() {
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(canvas);
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     resize();
 
     return () => {
@@ -168,6 +196,7 @@ export default function ParticleSphere() {
       observer.disconnect();
       resizeObserver.disconnect();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pointermove", handlePointerMove);
     };
   }, [points, reducedMotion]);
 
