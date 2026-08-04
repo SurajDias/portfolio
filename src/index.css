@@ -32,6 +32,10 @@ button, a { touch-action: manipulation; }
 
 a, button { -webkit-tap-highlight-color: transparent; }
 
+.transition, .transition-all, .transition-colors {
+  transition-property: transform, opacity, filter;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -85,21 +89,19 @@ a, button { -webkit-tap-highlight-color: transparent; }
   font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
-  transition: border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1), transform 280ms cubic-bezier(.22, 1, .36, 1), color 280ms cubic-bezier(.22, 1, .36, 1);
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
 }
 
-.tech-card img { flex: none; opacity: 0.88; transition: transform 280ms cubic-bezier(.22, 1, .36, 1); }
+.tech-card img { flex: none; opacity: 0.88; }
 .tech-card:hover, .tech-card:focus-within {
-  transform: scale(1.035);
+  transform: translateY(-2px);
   border-color: rgba(125, 211, 252, 0.32);
   background: rgba(56, 189, 248, 0.055);
   box-shadow: 0 7px 18px rgba(14, 116, 144, 0.12);
   color: #e0f2fe;
 }
-.tech-card:hover img, .tech-card:focus-within img { transform: scale(1.06); }
-
 .interactive-button {
-  transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1), color 280ms cubic-bezier(.22, 1, .36, 1);
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
   will-change: transform;
 }
 
@@ -126,23 +128,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .react-activity-calendar__tooltip .react-activity-calendar__tooltip-arrow,
 .react-activity-calendar__tooltip[data-color-scheme='dark'] .react-activity-calendar__tooltip-arrow { fill: #0b1220; }
 
-.project-card {
-  transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
-}
-
-@media (hover: hover) {
-  .project-card:hover, .project-card:focus-within {
-    transform: translateY(-2px);
-    border-color: rgba(125, 211, 252, .2);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, .14);
-  }
-  .project-card:hover .project-preview, .project-card:focus-within .project-preview { transform: scale(1.02); }
-}
-
-.project-preview { transition: transform 280ms cubic-bezier(.22, 1, .36, 1); }
-
 .certification-card {
-  transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
 }
 
 @media (hover: hover) {
@@ -170,5 +157,5 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .tech-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   .tech-marquee__track { width: auto; animation: none; }
   .tech-marquee__set[aria-hidden="true"] { display: none; }
-  .interactive-button:active, .project-card:hover, .project-card:focus-within, .certification-card:hover, .certification-card:focus-within, .tech-card:hover, .tech-card:focus-within { transform: none; }
+  .interactive-button:active, .certification-card:hover, .certification-card:focus-within, .tech-card:hover, .tech-card:focus-within { transform: none; }
 }

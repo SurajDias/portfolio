@@ -1,15 +1,14 @@
 import { ArrowUpRight, BadgeCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Container from "../components/common/Container";
 import SectionHeading from "../components/ui/SectionHeading";
 import Button from "../components/ui/Button";
 import { certifications } from "../data/certifications";
-
-const reveal = { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const };
+import { fadeUp } from "../lib/motion-variants";
 
 export default function Certifications() {
   return (
-    <section id="certifications" className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32">
+    <motion.section id="certifications" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32">
       <Container>
         <SectionHeading
           eyebrow="Credentials"
@@ -17,13 +16,9 @@ export default function Certifications() {
           description="A focused record of coursework that supports the systems and products I build."
         />
         <div className="mt-14 grid gap-4 md:grid-cols-3">
-          {certifications.map((certification, index) => (
-            <motion.article
+          {certifications.map((certification) => (
+            <article
               key={certification.name}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ ...reveal, delay: index * 0.08 }}
               className="certification-card flex min-h-56 flex-col rounded-xl border border-white/[.09] bg-white/[.025] p-5 sm:p-6"
             >
               <div className="flex items-start justify-between gap-4">
@@ -50,10 +45,10 @@ export default function Certifications() {
               >
                 {certification.buttonLabel} <ArrowUpRight size={15} aria-hidden="true" />
               </Button>
-            </motion.article>
+            </article>
           ))}
         </div>
       </Container>
-    </section>
+    </motion.section>
   );
 }

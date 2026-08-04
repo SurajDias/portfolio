@@ -1,15 +1,14 @@
 import { ArrowUpRight, CalendarDays, Flame, FolderGit2, GitCommitHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import Container from "../components/common/Container";
 import Button from "../components/ui/Button";
 import SectionHeading from "../components/ui/SectionHeading";
+import { fadeUp } from "../lib/motion-variants";
 
 const GITHUB_USERNAME = "SurajDias";
 const GITHUB_URL = `https://github.com/${GITHUB_USERNAME}`;
-const reveal = { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const };
-
 type GitHubProfile = {
   public_repos: number;
 };
@@ -32,7 +31,6 @@ type ContributionStats = {
 type Stat = { label: string; value: number | null; icon: typeof GitCommitHorizontal };
 
 const contributionApiUrl = `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`;
-
 function dateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -109,7 +107,7 @@ export default function BuildingInPublic() {
   ];
 
   return (
-    <section id="building-in-public" className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32" aria-labelledby="building-in-public-title">
+    <motion.section id="building-in-public" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32" aria-labelledby="building-in-public-title">
       <Container>
         <SectionHeading
           eyebrow="Building in public"
@@ -117,11 +115,7 @@ export default function BuildingInPublic() {
           description="Consistently shipping code, learning in public, and documenting progress through open-source contributions."
         />
 
-        <motion.article
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={reveal}
+        <article
           className="mt-14 overflow-hidden rounded-xl border border-white/[.09] bg-white/[.025]"
         >
           <div className="flex items-center gap-3 border-b border-white/[.08] px-5 py-4 sm:px-6">
@@ -152,23 +146,19 @@ export default function BuildingInPublic() {
               />
             </div>
 
-            <motion.dl
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+            <dl
               aria-busy={isLoading}
               className="mt-5 grid gap-3 border-t border-white/[.08] pt-5 sm:grid-cols-2 lg:grid-cols-4"
             >
               {stats.map(({ label, value, icon: Icon }) => (
-                <motion.div key={label} variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }} transition={reveal} className="min-h-[88px] rounded-lg border border-white/[.08] bg-[#050816]/35 px-4 py-3">
+                <div key={label} className="min-h-[88px] rounded-lg border border-white/[.08] bg-[#050816]/35 px-4 py-3">
                   <dt className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[.14em] text-slate-500"><Icon size={13} className="text-sky-400" aria-hidden="true" />{label}</dt>
                   <dd className="mt-2 text-xl font-semibold tracking-[-.03em] text-slate-100" aria-live="polite">
                     {value === null ? (isLoading ? "Loading…" : "Unavailable") : value.toLocaleString()}
                   </dd>
-                </motion.div>
+                </div>
               ))}
-            </motion.dl>
+            </dl>
 
             <div className="mt-7 flex justify-end">
               <Button href={GITHUB_URL} target="_blank" rel="noopener noreferrer" ariaLabel="Follow Suraj Dias on GitHub" variant="secondary">
@@ -176,8 +166,8 @@ export default function BuildingInPublic() {
               </Button>
             </div>
           </div>
-        </motion.article>
+        </article>
       </Container>
-    </section>
+    </motion.section>
   );
 }

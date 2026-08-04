@@ -2,7 +2,8 @@ import Background from "./components/common/Background";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Hero from "./sections/Hero";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig } from "motion/react";
+import { entranceTransition } from "./lib/motion-variants";
 import { lazy, Suspense } from "react";
 import Container from "./components/common/Container";
 
@@ -15,7 +16,7 @@ const Contact = lazy(() => import("./sections/Contact"));
 
 function App() {
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion="user" transition={entranceTransition}>
     <div className="overflow-x-clip">
       <a href="#main-content" className="sr-only fixed left-4 top-4 z-[60] rounded bg-sky-300 px-3 py-2 text-sm font-medium text-slate-950 focus:not-sr-only">Skip to content</a>
       <Background />

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Check, Mail } from "lucide-react";
+import { motion } from "motion/react";
 import Container from "../components/common/Container";
 import Button from "../components/ui/Button";
 import { EMAIL } from "../config/site";
+import { fadeUp } from "../lib/motion-variants";
 
 export default function Contact() {
   const [copied, setCopied] = useState(false);
@@ -22,7 +24,7 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-24 sm:py-32">
+    <motion.section id="contact" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="py-24 sm:py-32">
       <Container>
         <div className="relative overflow-hidden rounded-2xl border border-white/[.09] bg-[#0b1220]/70 px-6 py-14 sm:px-12 sm:py-16">
           <div className="absolute -right-24 -top-24 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
@@ -49,6 +51,6 @@ export default function Contact() {
           </div>
         </div>
       </Container>
-    </section>
+    </motion.section>
   );
 }

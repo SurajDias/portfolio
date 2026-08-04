@@ -1,7 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Container from "../common/Container";
+import { interactionTransition } from "../../lib/motion-variants";
 
 const links = ["About", "Projects", "Tech Stack", "Certifications", "Contact"];
 
@@ -93,13 +94,13 @@ export default function Navbar() {
   };
 
   return <header className={`fixed top-0 z-50 w-full transition-all duration-[280ms] ${scrolled ? "border-b border-white/[.08] bg-[#050816]/75 shadow-[0_10px_30px_rgba(0,0,0,.08)] backdrop-blur-xl" : "bg-transparent"}`}>
-    <motion.div aria-hidden="true" className="absolute bottom-0 left-0 h-px origin-left bg-gradient-to-r from-sky-300 via-blue-500 to-transparent" style={{ width: `${progress}%` }} />
+    <div aria-hidden="true" className="absolute bottom-0 left-0 h-px w-full origin-left bg-gradient-to-r from-sky-300 via-blue-500 to-transparent" style={{ transform: `scaleX(${progress / 100})` }} />
     <Container><div className="flex h-[72px] items-center justify-between">
       <a href="#top" aria-label="Suraj Dias, back to top" className="text-sm font-semibold tracking-[.18em] text-white transition hover:text-sky-300">SURAJ<span className="text-sky-400">.</span></a>
-      <nav aria-label="Main navigation" className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">{links.map(link => { const current = active === (link === "Tech Stack" ? "tech" : link.toLowerCase()); return <a key={link} href={url(link)} aria-current={current ? "page" : undefined} className={`relative py-2 transition-colors hover:text-white ${current ? "text-slate-100" : ""}`}>{link}{current && <motion.span layoutId="nav-active" className="absolute inset-x-0 -bottom-[1px] h-px bg-sky-300" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}</a>; })}</nav>
+      <nav aria-label="Main navigation" className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">{links.map(link => { const current = active === (link === "Tech Stack" ? "tech" : link.toLowerCase()); return <a key={link} href={url(link)} aria-current={current ? "page" : undefined} className={`relative py-2 transition-colors hover:text-white ${current ? "text-slate-100" : ""}`}>{link}{current && <span className="absolute inset-x-0 -bottom-[1px] h-px bg-sky-300" />}</a>; })}</nav>
       <a href="#contact" className="interactive-button hidden rounded-md border border-white/10 px-3.5 py-2 text-xs font-medium text-slate-200 hover:border-sky-400/40 hover:bg-white/5 hover:shadow-[0_10px_20px_rgba(14,116,144,.1)] md:block">Let’s talk</a>
       <button type="button" ref={menuButtonRef} onClick={toggleMenu} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="mobile-navigation" className="interactive-button rounded p-2 text-slate-300 hover:bg-white/5 hover:text-white md:hidden">{open ? <X size={20} /> : <Menu size={21} />}</button>
     </div>
-    <AnimatePresence>{open && <motion.nav ref={mobileNavigationRef} id="mobile-navigation" aria-label="Mobile navigation" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: .28, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden border-t border-white/[.08] bg-[#050816]/95 backdrop-blur-xl md:hidden"><div className="flex flex-col py-2">{links.map(link => <a onClick={closeMenu} key={link} href={url(link)} className="rounded px-2 py-3 text-sm text-slate-300 transition-colors duration-[280ms] hover:bg-white/5 hover:text-white">{link}</a>)}<a onClick={closeMenu} href="#contact" className="mt-1 rounded px-2 py-3 text-sm text-sky-300 transition-colors duration-[280ms] hover:bg-white/5 hover:text-sky-100">Let’s talk</a></div></motion.nav>}</AnimatePresence>
+    <AnimatePresence>{open && <motion.nav ref={mobileNavigationRef} id="mobile-navigation" aria-label="Mobile navigation" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={interactionTransition} className="border-t border-white/[.08] bg-[#050816]/95 backdrop-blur-xl md:hidden"><div className="flex flex-col py-2">{links.map(link => <a onClick={closeMenu} key={link} href={url(link)} className="rounded px-2 py-3 text-sm text-slate-300 transition-colors duration-[280ms] hover:bg-white/5 hover:text-white">{link}</a>)}<a onClick={closeMenu} href="#contact" className="mt-1 rounded px-2 py-3 text-sm text-sky-300 transition-colors duration-[280ms] hover:bg-white/5 hover:text-sky-100">Let’s talk</a></div></motion.nav>}</AnimatePresence>
     </Container></header>;
 }

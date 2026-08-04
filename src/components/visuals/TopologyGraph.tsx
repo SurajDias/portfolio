@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { projectArchitectures, type ArchitectureAccent, type ProjectArchitecture } from "../../data/architectures";
 import { featuredProjects } from "../../data/projects";
@@ -7,8 +6,6 @@ import useReducedMotion from "../../hooks/useReducedMotion";
 const colors: Record<ArchitectureAccent, string> = {
   blue: "#38bdf8", violet: "#a78bfa", green: "#34d399", amber: "#fbbf24",
 };
-
-const transition = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
 
 export default function TopologyGraph() {
   const reducedMotion = useReducedMotion();
@@ -28,7 +25,7 @@ export default function TopologyGraph() {
       <div className="relative border-b border-white/[.07] px-5 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[.18em] text-slate-500">
-            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/50 motion-safe:animate-ping" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" /></span>
+            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/50 motion-safe:animate-ping motion-reduce:animate-none" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" /></span>
             Architecture showcase
           </div>
           <span className="font-mono text-[10px] tracking-wide text-slate-600">SYSTEM / {architecture.shortName.toUpperCase()}</span>
@@ -41,22 +38,22 @@ export default function TopologyGraph() {
       <div id="architecture-panel" role="tabpanel" aria-labelledby={`architecture-tab-${architectureIndex}`} className="relative px-3 pb-2 pt-5 sm:px-5">
         <svg viewBox="0 0 666 310" className="h-auto w-full overflow-visible" role="img" aria-label={`${architecture.name} software architecture. Hover or focus a stage for details.`}>
           <g fill="none" stroke="#38bdf8" strokeOpacity=".16" strokeWidth="1.2">
-            {architecture.links.map(([from, to]) => { const a = nodesById.get(from)!; const b = nodesById.get(to)!; return <motion.line key={`${from}-${to}`} initial={false} animate={{ x1: a.x, y1: a.y, x2: b.x, y2: b.y, strokeOpacity: isActiveLink(from, to) ? .52 : activeNode ? .08 : .16 }} transition={transition} />; })}
+            {architecture.links.map(([from, to]) => { const a = nodesById.get(from)!; const b = nodesById.get(to)!; return <line key={`${from}-${to}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeOpacity={isActiveLink(from, to) ? .52 : activeNode ? .08 : .16} />; })}
           </g>
           <g fill="none" stroke="#7dd3fc" strokeOpacity=".32" strokeWidth="1.2" strokeDasharray="3 9">
-            {architecture.links.map(([from, to]) => { const a = nodesById.get(from)!; const b = nodesById.get(to)!; return <motion.line key={`dash-${from}-${to}`} initial={false} animate={{ x1: a.x, y1: a.y, x2: b.x, y2: b.y, strokeOpacity: isActiveLink(from, to) ? .72 : activeNode ? .12 : .32 }} transition={transition} />; })}
+            {architecture.links.map(([from, to]) => { const a = nodesById.get(from)!; const b = nodesById.get(to)!; return <line key={`dash-${from}-${to}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeOpacity={isActiveLink(from, to) ? .72 : activeNode ? .12 : .32} />; })}
           </g>
-          {!reducedMotion && architecture.packets.map(([from, to, delay], index) => { const a = nodesById.get(from)!; const b = nodesById.get(to)!; return <motion.g key={`${architectureIndex}-${from}-${to}-${index}`} initial={{ x: a.x, y: a.y, opacity: 0, scale: .8 }} animate={{ x: [a.x, b.x], y: [a.y, b.y], opacity: [0, .9, .9, 0], scale: [.8, 1, 1, .8] }} transition={{ duration: 3.4, delay, repeat: Infinity, ease: "linear", repeatDelay: 1.2 }} style={{ willChange: "transform" }}><circle r="2.6" fill="#e0f2fe" /><circle r="5.5" fill="#38bdf8" fillOpacity=".13" /></motion.g>; })}
+          {!reducedMotion && architecture.packets.map(([from, to], index) => { const b = nodesById.get(to)!; return <g key={`${architectureIndex}-${from}-${to}-${index}`} transform={`translate(${b.x} ${b.y})`} opacity=".85"><circle r="2.6" fill="#e0f2fe" /><circle r="5.5" fill="#38bdf8" fillOpacity=".13" /></g>; })}
           {architecture.nodes.map((node, index) => {
             const accent = colors[node.accent ?? "blue"]; const selected = activeNode === node.id;
-            return <motion.g key={`stage-${index}`} initial={false} animate={{ x: node.x, y: node.y, opacity: 1, scale: selected ? 1.045 : 1 }} transition={transition} tabIndex={0} role="button" aria-label={`${node.label}: ${node.detail}`} className="cursor-help outline-none" onMouseEnter={() => setActiveNode(node.id)} onMouseLeave={() => setActiveNode(null)} onFocus={() => setActiveNode(node.id)} onBlur={() => setActiveNode(null)} onClick={() => setActiveNode(node.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveNode(node.id); } }} style={{ willChange: "transform" }}>
-              <motion.circle r="31" fill="none" stroke={accent} strokeWidth="1" animate={reducedMotion ? { opacity: 0.2 } : { opacity: [.12, .34, .12], scale: [1, 1.09, 1] }} transition={{ duration: 3.8, delay: index * .22, repeat: reducedMotion ? 0 : Infinity, ease: "easeInOut" }} />
+            return <g key={`stage-${index}`} transform={`translate(${node.x} ${node.y}) scale(${selected ? 1.045 : 1})`} tabIndex={0} role="button" aria-label={`${node.label}: ${node.detail}`} className="cursor-help outline-none" onMouseEnter={() => setActiveNode(node.id)} onMouseLeave={() => setActiveNode(null)} onFocus={() => setActiveNode(node.id)} onBlur={() => setActiveNode(null)} onClick={() => setActiveNode(node.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveNode(node.id); } }}>
+              <circle r="31" fill="none" stroke={accent} strokeWidth="1" opacity={reducedMotion ? .2 : .28} />
               <circle r="23" fill="#0c1728" stroke={accent} strokeOpacity={selected ? ".85" : ".42"} strokeWidth="1.2" />
               <circle r="5" fill={accent} />
               <text y="45" textAnchor="middle" fill={selected ? "#e0f2fe" : "#94a3b8"} fontSize="10" fontWeight="600" fontFamily="ui-sans-serif, system-ui" letterSpacing="1">{node.label.toUpperCase()}</text>
-            </motion.g>;
+            </g>;
           })}
-          <AnimatePresence mode="wait">{active && <motion.g key={active.id} pointerEvents="none" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={transition} transform={`translate(${Math.min(active.x + 20, 445)} ${active.y < 150 ? active.y + 30 : active.y - 72})`}><rect width="196" height="48" rx="7" fill="#08111f" stroke="#334155" /><text x="12" y="19" fill="#e2e8f0" fontSize="10" fontWeight="600" fontFamily="ui-sans-serif, system-ui">{active.label}</text><text x="12" y="35" fill="#94a3b8" fontSize="9" fontFamily="ui-sans-serif, system-ui">{active.detail}</text></motion.g>}</AnimatePresence>
+          {active && <g pointerEvents="none" transform={`translate(${Math.min(active.x + 20, 445)} ${active.y < 150 ? active.y + 30 : active.y - 72})`}><rect width="196" height="48" rx="7" fill="#08111f" stroke="#334155" /><text x="12" y="19" fill="#e2e8f0" fontSize="10" fontWeight="600" fontFamily="ui-sans-serif, system-ui">{active.label}</text><text x="12" y="35" fill="#94a3b8" fontSize="9" fontFamily="ui-sans-serif, system-ui">{active.detail}</text></g>}
         </svg>
       </div>
 

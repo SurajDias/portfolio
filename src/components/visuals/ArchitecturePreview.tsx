@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import useReducedMotion from "../../hooks/useReducedMotion";
+import { fadeUp } from "../../lib/motion-variants";
 
 type Props = { label: string; index: number };
 type Point = readonly [number, number];
@@ -7,24 +8,10 @@ type Point = readonly [number, number];
 const ink = "#7dd3fc";
 const muted = "#64748b";
 const surface = "#0d1726";
-const packetTransition = (delay: number) => ({
-  duration: 2.9,
-  delay,
-  repeat: Infinity,
-  repeatDelay: 1.15,
-  ease: "linear" as const,
-});
-
-function Packet({ points, delay, reducedMotion }: { points: readonly Point[]; delay: number; reducedMotion: boolean }) {
+function Packet({ points, reducedMotion }: { points: readonly Point[]; delay: number; reducedMotion: boolean }) {
   if (reducedMotion) return null;
-  return (
-    <motion.circle
-      r="2.1"
-      fill="#e0f2fe"
-      animate={{ cx: points.map(([x]) => x), cy: points.map(([, y]) => y), opacity: [0, 0.95, 0.95, 0] }}
-      transition={packetTransition(delay)}
-    />
-  );
+  const [x, y] = points[points.length - 1];
+  return <circle cx={x} cy={y} r="2.1" fill="#e0f2fe" opacity=".85" />;
 }
 
 function Box({ x, y, width, label, active = false }: { x: number; y: number; width: number; label: string; active?: boolean }) {
@@ -141,13 +128,13 @@ export default function ArchitecturePreview({ label, index }: Props) {
   if (index === 3) diagram = <Churn reducedMotion={reducedMotion} />;
 
   return (
-    <div className="project-preview group/preview relative mt-7 aspect-[16/9] overflow-hidden rounded-lg border border-white/[.08] bg-[#0b1220]">
+    <div className="project-preview relative mt-7 aspect-[16/9] overflow-hidden rounded-lg border border-white/[.08] bg-[#0b1220]">
       <motion.svg
         viewBox="0 0 360 202"
-        initial={{ opacity: 0, scale: 1.02 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: reducedMotion ? 0 : 0.55, delay: index * 0.06 }}
+        initial="hidden"
+        whileInView="visible"
+        variants={fadeUp}
+        viewport={{ once: true, margin: "-100px" }}
         className="absolute inset-0 h-full w-full"
         role="img"
         aria-label={`${label} architecture diagram`}
@@ -155,7 +142,7 @@ export default function ArchitecturePreview({ label, index }: Props) {
         <path d="M18 18H342V184H18Z M18 45H342 M18 157H342" fill="none" stroke="#94a3b8" strokeOpacity=".12" strokeWidth="1" />
         {diagram}
       </motion.svg>
-      <span className="absolute bottom-3 right-4 text-[9px] uppercase tracking-widest text-slate-500 transition-colors duration-300 group-hover/preview:text-slate-300">{label} architecture</span>
+      <span className="absolute bottom-3 right-4 text-[9px] uppercase tracking-widest text-slate-500">{label} architecture</span>
     </div>
   );
 }
