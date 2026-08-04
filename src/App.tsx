@@ -9,6 +9,7 @@ import Container from "./components/common/Container";
 const Projects = lazy(() => import("./sections/Projects"));
 const TechStack = lazy(() => import("./sections/TechStack"));
 const Certifications = lazy(() => import("./sections/Certifications"));
+const BuildingInPublic = lazy(() => import("./sections/BuildingInPublic"));
 const About = lazy(() => import("./sections/About"));
 const Contact = lazy(() => import("./sections/Contact"));
 
@@ -25,6 +26,7 @@ function App() {
           <Projects />
           <TechStack />
           <Certifications />
+          <BuildingInPublic />
           <About />
           <Contact />
         </Suspense>

@@ -109,6 +109,23 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 .interactive-button:active { transform: translateY(0) scale(.985); }
 
+.github-calendar-scroll .react-activity-calendar {
+  min-width: max-content;
+  color: #94a3b8;
+}
+
+.react-activity-calendar__tooltip,
+.react-activity-calendar__tooltip[data-color-scheme='dark'] {
+  border: 1px solid rgba(125, 211, 252, .2);
+  border-radius: .5rem;
+  background: #0b1220;
+  color: #e0f2fe;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .22);
+}
+
+.react-activity-calendar__tooltip .react-activity-calendar__tooltip-arrow,
+.react-activity-calendar__tooltip[data-color-scheme='dark'] .react-activity-calendar__tooltip-arrow { fill: #0b1220; }
+
 .project-card {
   transition: transform 280ms cubic-bezier(.22, 1, .36, 1), border-color 280ms cubic-bezier(.22, 1, .36, 1), background-color 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
 }
