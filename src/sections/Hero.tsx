@@ -43,7 +43,8 @@ export default function Hero() {
 
       <div className="relative z-10 w-full">
         <Container>
-          <div className="grid items-center gap-12 lg:translate-x-6 lg:grid-cols-[.76fr_1.24fr] lg:gap-28">
+          {/* Only change: Architecture column gets more space */}
+          <div className="grid items-center gap-12 lg:translate-x-6 lg:grid-cols-[.62fr_1.38fr] lg:gap-28">
             <motion.div
               initial="hidden"
               animate="visible"
