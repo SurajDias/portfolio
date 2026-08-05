@@ -1,6 +1,6 @@
 import { ArrowUpRight, CalendarDays, Flame, FolderGit2, GitCommitHorizontal } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import Container from "../components/common/Container";
 import Button from "../components/ui/Button";
@@ -59,8 +59,19 @@ function StatValue({ value, shouldAnimate, prefersReducedMotion }: { value: numb
   return <>{displayValue.toLocaleString()}</>;
 }
 
+function getAdjacentDates(date: string) {
+  const baseDate = new Date(`${date}T00:00:00Z`);
+
+  return [-7, -1, 1, 7].map((offset) => {
+    const adjacentDate = new Date(baseDate);
+    adjacentDate.setUTCDate(adjacentDate.getUTCDate() + offset);
+    return adjacentDate.toISOString().slice(0, 10);
+  });
+}
+
 export default function BuildingInPublic() {
   const statsRef = useRef<HTMLDListElement>(null);
+  const activeCalendarCells = useRef(new Set<SVGRectElement>());
   const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -88,6 +99,29 @@ export default function BuildingInPublic() {
 
     return () => observer.disconnect();
   }, [hasEnteredViewport]);
+
+  const clearCalendarInteraction = () => {
+    activeCalendarCells.current.forEach((cell) => cell.classList.remove("github-calendar-cell--adjacent"));
+    activeCalendarCells.current.clear();
+  };
+
+  const highlightCalendarInteraction = (cell: SVGRectElement, date: string) => {
+    clearCalendarInteraction();
+    const calendar = cell.ownerSVGElement;
+    if (!calendar) return;
+
+    getAdjacentDates(date).forEach((adjacentDate) => {
+      const adjacentCell = calendar.querySelector<SVGRectElement>(`[data-date="${adjacentDate}"]`);
+      if (!adjacentCell) return;
+      adjacentCell.classList.add("github-calendar-cell--adjacent");
+      activeCalendarCells.current.add(adjacentCell);
+    });
+  };
+
+  const removeCalendarInteraction = (cell: SVGRectElement) => {
+    if (cell === document.activeElement || cell.matches(":hover")) return;
+    clearCalendarInteraction();
+  };
 
   return (
     <motion.section id="building-in-public" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32" aria-labelledby="building-in-public-title">
@@ -124,7 +158,33 @@ export default function BuildingInPublic() {
                 showWeekdayLabels={["mon", "wed", "fri"]}
                 theme={{ dark: ["#172033", "#12324a", "#0e587b", "#0284c7", "#7dd3fc"] }}
                 labels={{ totalCount: "" }}
-                tooltips={{ activity: { text: (activity) => `${activity.count} contributions on ${activity.date}` } }}
+                renderBlock={(block, activity) => cloneElement(block, {
+                  className: "github-calendar-cell",
+                  tabIndex: 0,
+                  "aria-label": `${activity.date}: ${activity.count} ${activity.count === 1 ? "contribution" : "contributions"}`,
+                  onPointerEnter: (event) => highlightCalendarInteraction(event.currentTarget, activity.date),
+                  onPointerLeave: (event) => removeCalendarInteraction(event.currentTarget),
+                  onFocus: (event) => {
+                    highlightCalendarInteraction(event.currentTarget, activity.date);
+                    event.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
+                  },
+                  onBlur: (event) => {
+                    event.currentTarget.dispatchEvent(new MouseEvent("mouseleave"));
+                    removeCalendarInteraction(event.currentTarget);
+                  },
+                })}
+                tooltips={{
+                  activity: {
+                    text: (activity) => `Date: ${activity.date} · Contributions: ${activity.count}`,
+                    transitionStyles: {
+                      duration: 140,
+                      initial: { opacity: 0 },
+                      open: { opacity: 1 },
+                      close: { opacity: 0 },
+                      common: { transition: "opacity 140ms ease-out" },
+                    },
+                  },
+                }}
                 errorMessage="GitHub activity is currently unavailable."
               />
             </div>
