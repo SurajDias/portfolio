@@ -1,6 +1,6 @@
 import { ArrowUpRight, CalendarDays, Flame, FolderGit2, GitCommitHorizontal } from "lucide-react";
 import { motion } from "motion/react";
-import { cloneElement, useEffect, useRef, useState } from "react";
+import { cloneElement, useCallback, useEffect, useRef, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import Container from "../components/common/Container";
 import Button from "../components/ui/Button";
@@ -15,6 +15,15 @@ type Stat = {
   value: number;
   subtitle: string;
   icon: typeof GitCommitHorizontal;
+};
+
+type SnakeGame = {
+  cells: Map<string, SVGRectElement>;
+  snake: string[];
+  food: string;
+  direction: number;
+  nextDirection: number;
+  intervalId: ReturnType<typeof window.setInterval>;
 };
 
 const stats: Stat[] = [
@@ -69,10 +78,23 @@ function getAdjacentDates(date: string) {
   });
 }
 
+function addDays(date: string, days: number) {
+  const nextDate = new Date(`${date}T00:00:00Z`);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+  return nextDate.toISOString().slice(0, 10);
+}
+
 export default function BuildingInPublic() {
   const statsRef = useRef<HTMLDListElement>(null);
+  const calendarScrollRef = useRef<HTMLDivElement>(null);
+  const snakeHintRef = useRef<HTMLButtonElement>(null);
   const activeCalendarCells = useRef(new Set<SVGRectElement>());
+  const snakeGame = useRef<SnakeGame | null>(null);
+  const snakeParticles = useRef(new Set<HTMLSpanElement>());
+  const snakeParticleTimeouts = useRef(new Set<ReturnType<typeof window.setTimeout>>());
+  const isSnakeActiveRef = useRef(false);
   const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
+  const [snakeMessage, setSnakeMessage] = useState("");
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -106,6 +128,7 @@ export default function BuildingInPublic() {
   };
 
   const highlightCalendarInteraction = (cell: SVGRectElement, date: string) => {
+    if (isSnakeActiveRef.current) return;
     clearCalendarInteraction();
     const calendar = cell.ownerSVGElement;
     if (!calendar) return;
@@ -119,9 +142,180 @@ export default function BuildingInPublic() {
   };
 
   const removeCalendarInteraction = (cell: SVGRectElement) => {
+    if (isSnakeActiveRef.current) return;
     if (cell === document.activeElement || cell.matches(":hover")) return;
     clearCalendarInteraction();
   };
+
+  const clearSnakeParticles = useCallback(() => {
+    snakeParticleTimeouts.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    snakeParticleTimeouts.current.clear();
+    snakeParticles.current.forEach((particle) => particle.remove());
+    snakeParticles.current.clear();
+  }, []);
+
+  const clearSnakeBoard = useCallback(() => {
+    calendarScrollRef.current?.classList.remove("github-calendar--playing");
+    calendarScrollRef.current?.querySelectorAll<SVGRectElement>(".github-calendar-cell--snake, .github-calendar-cell--snake-head, .github-calendar-cell--food, .github-calendar-cell--burst")
+      .forEach((cell) => cell.classList.remove("github-calendar-cell--snake", "github-calendar-cell--snake-head", "github-calendar-cell--food", "github-calendar-cell--burst"));
+    clearSnakeParticles();
+  }, [clearSnakeParticles]);
+
+  const stopSnake = useCallback((message = "") => {
+    const game = snakeGame.current;
+    if (game) window.clearInterval(game.intervalId);
+    snakeGame.current = null;
+    isSnakeActiveRef.current = false;
+    clearSnakeBoard();
+    setSnakeMessage(message);
+    window.requestAnimationFrame(() => snakeHintRef.current?.focus({ preventScroll: true }));
+  }, [clearSnakeBoard]);
+
+  const burstAt = useCallback((cell: SVGRectElement) => {
+    const container = calendarScrollRef.current;
+    if (!container) return;
+
+    const cellBounds = cell.getBoundingClientRect();
+    const containerBounds = container.getBoundingClientRect();
+    cell.classList.add("github-calendar-cell--burst");
+
+    for (let index = 0; index < 5; index += 1) {
+      const particle = document.createElement("span");
+      particle.className = "github-snake-particle";
+      particle.style.left = `${cellBounds.left - containerBounds.left + container.scrollLeft + cellBounds.width / 2}px`;
+      particle.style.top = `${cellBounds.top - containerBounds.top + container.scrollTop + cellBounds.height / 2}px`;
+      particle.style.setProperty("--snake-particle-x", `${(Math.random() - 0.5) * 24}px`);
+      particle.style.setProperty("--snake-particle-y", `${(Math.random() - 0.5) * 24}px`);
+      container.appendChild(particle);
+      snakeParticles.current.add(particle);
+
+      const timeoutId = window.setTimeout(() => {
+        particle.remove();
+        snakeParticles.current.delete(particle);
+        snakeParticleTimeouts.current.delete(timeoutId);
+      }, 460);
+      snakeParticleTimeouts.current.add(timeoutId);
+    }
+
+    const burstTimeout = window.setTimeout(() => {
+      cell.classList.remove("github-calendar-cell--burst");
+      snakeParticleTimeouts.current.delete(burstTimeout);
+    }, 460);
+    snakeParticleTimeouts.current.add(burstTimeout);
+  }, []);
+
+  const paintSnake = useCallback((game: SnakeGame, previousSnake: string[] = []) => {
+    previousSnake.forEach((date) => game.cells.get(date)?.classList.remove("github-calendar-cell--snake", "github-calendar-cell--snake-head"));
+    game.snake.forEach((date, index) => {
+      const cell = game.cells.get(date);
+      if (!cell) return;
+      cell.classList.add("github-calendar-cell--snake");
+      if (index === 0) cell.classList.add("github-calendar-cell--snake-head");
+    });
+    game.cells.get(game.food)?.classList.add("github-calendar-cell--food");
+  }, []);
+
+  const startSnake = useCallback(() => {
+    if (isSnakeActiveRef.current) return;
+
+    const cells = new Map<string, SVGRectElement>();
+    calendarScrollRef.current?.querySelectorAll<SVGRectElement>(".github-calendar-cell[data-date]")
+      .forEach((cell) => {
+        if (cell.dataset.date) cells.set(cell.dataset.date, cell);
+      });
+
+    const head = [...cells.keys()].find((date) => cells.has(addDays(date, -7)) && cells.has(addDays(date, -14)) && cells.has(addDays(date, 7)));
+    if (!head) return;
+
+    const snake = [head, addDays(head, -7), addDays(head, -14)];
+    const availableFoodCells = [...cells.keys()].filter((date) => !snake.includes(date));
+    const food = availableFoodCells[Math.floor(Math.random() * availableFoodCells.length)];
+    if (!food) return;
+
+    clearCalendarInteraction();
+    clearSnakeBoard();
+    isSnakeActiveRef.current = true;
+    calendarScrollRef.current?.classList.add("github-calendar--playing");
+    setSnakeMessage("Snake active. Use arrow keys or WASD. Press Escape to exit.");
+
+    const game: SnakeGame = { cells, snake, food, direction: 7, nextDirection: 7, intervalId: 0 };
+    snakeGame.current = game;
+    paintSnake(game);
+    calendarScrollRef.current?.focus({ preventScroll: true });
+
+    game.intervalId = window.setInterval(() => {
+      const currentGame = snakeGame.current;
+      if (!currentGame) return;
+
+      if (currentGame.nextDirection !== -currentGame.direction) {
+        currentGame.direction = currentGame.nextDirection;
+      }
+
+      const nextHead = addDays(currentGame.snake[0], currentGame.direction);
+      const willEat = nextHead === currentGame.food;
+      const occupiedCells = willEat ? currentGame.snake : currentGame.snake.slice(0, -1);
+      if (!currentGame.cells.has(nextHead) || occupiedCells.includes(nextHead)) {
+        stopSnake("Snake game over. Press S to play again.");
+        return;
+      }
+
+      const previousSnake = [...currentGame.snake];
+      currentGame.snake.unshift(nextHead);
+      if (!willEat) currentGame.snake.pop();
+
+      if (willEat) {
+        const eatenCell = currentGame.cells.get(currentGame.food);
+        eatenCell?.classList.remove("github-calendar-cell--food");
+        if (eatenCell) burstAt(eatenCell);
+        const foodOptions = [...currentGame.cells.keys()].filter((date) => !currentGame.snake.includes(date));
+        currentGame.food = foodOptions[Math.floor(Math.random() * foodOptions.length)];
+      }
+
+      paintSnake(currentGame, previousSnake);
+    }, 145);
+  }, [burstAt, clearSnakeBoard, paintSnake, stopSnake]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping = target?.matches("input, textarea, select, [contenteditable='true']");
+
+      if (!isSnakeActiveRef.current) {
+        if (event.key.toLowerCase() === "s" && !isTyping) startSnake();
+        return;
+      }
+
+      const directionByKey: Record<string, number> = {
+        ArrowUp: -1,
+        w: -1,
+        ArrowDown: 1,
+        s: 1,
+        ArrowLeft: -7,
+        a: -7,
+        ArrowRight: 7,
+        d: 7,
+      };
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        stopSnake();
+        return;
+      }
+
+      const nextDirection = directionByKey[event.key] ?? directionByKey[event.key.toLowerCase()];
+      if (nextDirection) {
+        event.preventDefault();
+        const game = snakeGame.current;
+        if (game && nextDirection !== -game.direction) game.nextDirection = nextDirection;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (isSnakeActiveRef.current) stopSnake();
+    };
+  }, [startSnake, stopSnake]);
 
   return (
     <motion.section id="building-in-public" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32" aria-labelledby="building-in-public-title">
@@ -146,7 +340,7 @@ export default function BuildingInPublic() {
           </div>
 
           <div className="p-5 sm:p-6">
-            <div className="github-calendar-scroll -mx-5 overflow-x-auto px-5 pb-4 pt-2 sm:-mx-6 sm:px-6" aria-label={`${GITHUB_USERNAME}'s GitHub contribution calendar`}>
+            <div ref={calendarScrollRef} tabIndex={-1} className="github-calendar-scroll relative -mx-5 overflow-x-auto px-5 pb-4 pt-2 sm:-mx-6 sm:px-6" aria-label={`${GITHUB_USERNAME}'s GitHub contribution calendar`}>
               <GitHubCalendar
                 username={GITHUB_USERNAME}
                 year="last"
@@ -187,6 +381,10 @@ export default function BuildingInPublic() {
                 }}
                 errorMessage="GitHub activity is currently unavailable."
               />
+              <button ref={snakeHintRef} type="button" onClick={startSnake} className="mt-2 text-[10px] text-slate-600 transition-colors hover:text-cyan-300 focus-visible:text-cyan-300 focus-visible:outline-none">
+                Press S to play
+              </button>
+              <p className="sr-only" aria-live="polite">{snakeMessage}</p>
             </div>
 
             <dl

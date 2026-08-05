@@ -116,6 +116,90 @@ a, button { -webkit-tap-highlight-color: transparent; }
   color: #94a3b8;
 }
 
+.github-calendar-scroll .github-calendar-cell {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 140ms ease-out, filter 140ms ease-out, opacity 140ms ease-out;
+  will-change: transform, filter;
+}
+
+@media (hover: hover) {
+  .github-calendar-scroll .github-calendar-cell:hover,
+  .github-calendar-scroll .github-calendar-cell:focus-visible {
+    filter: brightness(1.12) drop-shadow(0 0 5px rgba(34, 211, 238, .72));
+    transform: scale(1.14);
+  }
+
+}
+
+.github-calendar-scroll .github-calendar-cell--adjacent {
+  filter: brightness(1.16);
+}
+
+.github-calendar-scroll .github-calendar-cell:focus-visible {
+  filter: brightness(1.12) drop-shadow(0 0 5px rgba(34, 211, 238, .72));
+  outline: none;
+  stroke: rgba(125, 211, 252, .9);
+  stroke-width: 1px;
+  transform: scale(1.14);
+}
+
+.github-calendar--playing .github-calendar-cell {
+  pointer-events: none;
+}
+
+.github-calendar--playing .github-calendar-cell--snake {
+  fill: #22d3ee !important;
+  filter: brightness(1.08) drop-shadow(0 0 4px rgba(34, 211, 238, .45));
+  transform: scale(1.06);
+}
+
+.github-calendar--playing .github-calendar-cell--snake-head {
+  fill: #a5f3fc !important;
+  filter: brightness(1.12) drop-shadow(0 0 8px rgba(34, 211, 238, .88));
+  transform: scale(1.14);
+}
+
+.github-calendar--playing .github-calendar-cell--food {
+  fill: #67e8f9 !important;
+  animation: github-snake-food-pulse 820ms ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 7px rgba(34, 211, 238, .9));
+}
+
+.github-calendar--playing .github-calendar-cell--burst {
+  animation: github-snake-burst 460ms ease-out;
+}
+
+.github-snake-particle {
+  position: absolute;
+  z-index: 2;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: #a5f3fc;
+  box-shadow: 0 0 6px rgba(34, 211, 238, .9);
+  pointer-events: none;
+  animation: github-snake-particle 460ms ease-out forwards;
+}
+
+@keyframes github-snake-food-pulse {
+  to { filter: brightness(1.18) drop-shadow(0 0 11px rgba(34, 211, 238, 1)); transform: scale(1.16); }
+}
+
+@keyframes github-snake-burst {
+  50% { filter: brightness(1.25) drop-shadow(0 0 12px rgba(34, 211, 238, 1)); transform: scale(1.35); }
+}
+
+@keyframes github-snake-particle {
+  to { opacity: 0; transform: translate(var(--snake-particle-x), var(--snake-particle-y)) scale(.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .github-calendar--playing .github-calendar-cell--food,
+  .github-calendar--playing .github-calendar-cell--burst,
+  .github-snake-particle { animation: none; }
+}
+
 .react-activity-calendar__tooltip,
 .react-activity-calendar__tooltip[data-color-scheme='dark'] {
   border: 1px solid rgba(125, 211, 252, .2);
@@ -123,6 +207,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   background: #0b1220;
   color: #e0f2fe;
   box-shadow: 0 10px 24px rgba(0, 0, 0, .22);
+  will-change: opacity;
 }
 
 .react-activity-calendar__tooltip .react-activity-calendar__tooltip-arrow,
