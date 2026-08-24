@@ -1,4 +1,143 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
+@config "../tailwind.config.ts";
+
+@theme {
+  --color-background: #050816;
+  --color-surface: #0b0f19;
+  --color-surface-glass: rgba(15, 23, 42, 0.65);
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-accent-glow: rgba(56, 189, 248, 0.15);
+  --color-hero-base: #050816;
+  --color-glass-fill: rgba(15, 23, 42, 0.65);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-scrim: rgba(5, 8, 22, 0.65);
+
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: 3.75rem;
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 800;
+
+  --text-h1: 2.75rem;
+  --text-h1--line-height: 1.15;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: 2rem;
+  --text-h2--line-height: 1.25;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 600;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body-lg--letter-spacing: -0.01em;
+  --text-body-lg--font-weight: 400;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.6;
+  --text-body--letter-spacing: 0;
+  --text-body--font-weight: 400;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.015em;
+  --text-caption--font-weight: 500;
+
+  --spacing-section-sm: 6rem;
+  --spacing-section-md: 8rem;
+  --spacing-section-lg: 10rem;
+}
+
+@utility glass {
+  background-color: var(--color-surface-glass, rgba(15, 23, 42, 0.65));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+@utility glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(11, 15, 25, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+@utility bg-radial-glow {
+  background-image: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 0%),
+    rgba(56, 189, 248, 0.12),
+    transparent 80%
+  );
+}
+
+@utility bg-radial-corner {
+  background-image: radial-gradient(
+    800px circle at 100% 0%,
+    rgba(99, 102, 241, 0.14),
+    rgba(56, 189, 248, 0.04) 45%,
+    transparent 80%
+  );
+}
+
+@utility bg-radial-top {
+  background-image: radial-gradient(
+    1000px circle at 50% -10%,
+    rgba(99, 102, 241, 0.16),
+    rgba(56, 189, 248, 0.05) 50%,
+    transparent 80%
+  );
+}
+
+/* Also expose direct standard utility class names for seamless usage */
+.glass {
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(11, 15, 25, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+.bg-radial-glow {
+  background-image: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 0%),
+    rgba(56, 189, 248, 0.12),
+    transparent 80%
+  );
+}
+
+.bg-radial-corner {
+  background-image: radial-gradient(
+    800px circle at 100% 0%,
+    rgba(99, 102, 241, 0.14),
+    rgba(56, 189, 248, 0.04) 45%,
+    transparent 80%
+  );
+}
+
+.bg-radial-top {
+  background-image: radial-gradient(
+    1000px circle at 50% -10%,
+    rgba(99, 102, 241, 0.16),
+    rgba(56, 189, 248, 0.05) 50%,
+    transparent 80%
+  );
+}
 
 html {
   scroll-behavior: smooth;
@@ -26,11 +165,53 @@ body, #root { min-width: 320px; }
 button, a { touch-action: manipulation; }
 
 :focus-visible {
-  outline: 2px solid #7dd3fc;
-  outline-offset: 4px;
+  outline: 2px solid rgba(56, 189, 248, 0.9) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35) !important;
+  border-radius: inherit;
 }
 
 a, button { -webkit-tap-highlight-color: transparent; }
+
+@media (hover: hover) and (pointer: fine) {
+  a, button, [role="button"], [data-cursor], [data-cursor-text] {
+    cursor: none !important;
+  }
+}
+
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.surface-level-1 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.008) 100%), rgba(11, 15, 25, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+}
+
+.surface-level-2 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.55), 0 0 20px rgba(56, 189, 248, 0.06);
+}
+
+.surface-level-3 {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(11, 15, 25, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.12);
+}
 
 .transition, .transition-all, .transition-colors {
   transition-property: transform, opacity, filter;

@@ -1,54 +1,89 @@
-import { ArrowUpRight, BadgeCheck } from "lucide-react";
+import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
 import Container from "../components/common/Container";
 import SectionHeading from "../components/ui/SectionHeading";
-import Button from "../components/ui/Button";
 import { certifications } from "../data/certifications";
-import { fadeUp } from "../lib/motion-variants";
+import { fadeUp, staggerContainer } from "../lib/motion-variants";
 
 export default function Certifications() {
   return (
-    <motion.section id="certifications" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32">
+    <section
+      id="certifications"
+      className="relative border-y border-border-subtle bg-surface/20 py-24 sm:py-32"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-radial-corner opacity-40" />
       <Container>
         <SectionHeading
           eyebrow="Credentials"
           title="Foundational learning, independently verified."
           description="A focused record of coursework that supports the systems and products I build."
         />
-        <div className="mt-14 grid gap-4 md:grid-cols-3">
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={staggerContainer}
+          className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-2"
+        >
           {certifications.map((certification) => (
-            <article
+            <motion.article
               key={certification.name}
-              className="certification-card flex min-h-56 flex-col rounded-xl border border-white/[.09] bg-white/[.025] p-5 sm:p-6"
+              variants={fadeUp}
+              className="glass-card group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border-subtle bg-surface-glass/80 p-6 sm:p-7 backdrop-blur-xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_32px_rgba(56,189,248,0.12)]"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-[#050816]/60">
-                    <img src={certification.issuerLogoUrl} alt="" aria-hidden="true" width="22" height="22" loading="lazy" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface/80 shadow-inner">
+                      <img
+                        src={certification.issuerLogoUrl}
+                        alt=""
+                        aria-hidden="true"
+                        width="22"
+                        height="22"
+                        className="h-5.5 w-5.5 object-contain opacity-90 transition-opacity group-hover:opacity-100"
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                      {certification.issuer}
+                    </span>
                   </div>
-                  <p className="text-sm font-medium text-slate-300">{certification.issuer}</p>
+
+                  {certification.verified && (
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-medium text-emerald-300/90 backdrop-blur-sm">
+                      <CheckCircle2 size={11} className="text-emerald-400" />
+                      Verified
+                    </span>
+                  )}
                 </div>
-                {certification.verified && (
-                  <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium uppercase tracking-[.14em] text-sky-300">
-                    <BadgeCheck size={14} aria-hidden="true" /> Verified
-                  </span>
-                )}
+
+                <h3 className="text-xl font-bold tracking-tight text-text-primary group-hover:text-accent transition-colors duration-200">
+                  {certification.name}
+                </h3>
               </div>
-              <h3 className="mt-7 text-lg font-medium leading-6 tracking-[-.02em] text-slate-100">{certification.name}</h3>
-              <Button
-                href={certification.credentialUrl}
-                variant="secondary"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${certification.buttonLabel}: ${certification.name} by ${certification.issuer}`}
-                className="mt-auto w-fit px-3.5 py-2 text-xs"
-              >
-                {certification.buttonLabel} <ArrowUpRight size={15} aria-hidden="true" />
-              </Button>
-            </article>
+
+              <div className="mt-8 pt-4 border-t border-border-subtle/50 flex items-center justify-between">
+                <a
+                  href={certification.credentialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${certification.buttonLabel}: ${certification.name} by ${certification.issuer}`}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-muted transition-colors hover:text-accent group/link"
+                >
+                  <span>{certification.buttonLabel}</span>
+                  <ArrowUpRight
+                    size={14}
+                    className="text-text-muted transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 group-hover/link:text-accent"
+                  />
+                </a>
+              </div>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </Container>
-    </motion.section>
+    </section>
   );
 }
+

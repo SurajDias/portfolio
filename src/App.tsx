@@ -1,11 +1,15 @@
-import Background from "./components/common/Background";
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
-import Hero from "./sections/Hero";
-import { MotionConfig } from "motion/react";
-import { entranceTransition } from "./lib/motion-variants";
 import { lazy, Suspense } from "react";
+import { MotionConfig } from "motion/react";
+import Background from "./components/common/Background";
+import CursorSpotlight from "./components/common/CursorSpotlight";
+import CustomCursor from "./components/common/CustomCursor";
+import IntroSequence from "./components/common/IntroSequence";
 import Container from "./components/common/Container";
+import Footer from "./components/layout/Footer";
+import Navbar from "./components/layout/Navbar";
+import Hero from "./sections/Hero";
+import { entranceTransition } from "./lib/motion-variants";
+import useSmoothScroll from "./hooks/useSmoothScroll";
 
 const Projects = lazy(() => import("./sections/Projects"));
 const TechStack = lazy(() => import("./sections/TechStack"));
@@ -15,25 +19,35 @@ const About = lazy(() => import("./sections/About"));
 const Contact = lazy(() => import("./sections/Contact"));
 
 function App() {
+  useSmoothScroll();
+
   return (
     <MotionConfig reducedMotion="user" transition={entranceTransition}>
-    <div className="overflow-x-clip">
-      <a href="#main-content" className="sr-only fixed left-4 top-4 z-[60] rounded bg-sky-300 px-3 py-2 text-sm font-medium text-slate-950 focus:not-sr-only">Skip to content</a>
-      <Background />
-      <Navbar />
-      <main id="main-content">
-        <Hero />
-        <Suspense fallback={<SectionLoadingFallback />}>
-          <Projects />
-          <TechStack />
-          <Certifications />
-          <BuildingInPublic />
-          <About />
-          <Contact />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+      <div className="relative overflow-x-clip">
+        <a
+          href="#main-content"
+          className="sr-only fixed left-4 top-4 z-[60] rounded-full bg-accent px-4 py-2 text-sm font-semibold text-slate-950 focus:not-sr-only focus:outline-none"
+        >
+          Skip to content
+        </a>
+        <IntroSequence />
+        <Background />
+        <CursorSpotlight />
+        <CustomCursor />
+        <Navbar />
+        <main id="main-content">
+          <Hero />
+          <Suspense fallback={<SectionLoadingFallback />}>
+            <Projects />
+            <TechStack />
+            <Certifications />
+            <BuildingInPublic />
+            <About />
+            <Contact />
+          </Suspense>
+        </main>
+        <Footer />
+      </div>
     </MotionConfig>
   );
 }
@@ -42,7 +56,7 @@ function SectionLoadingFallback() {
   return (
     <div className="py-24 sm:py-32" role="status" aria-live="polite">
       <Container>
-        <div className="h-40 animate-pulse rounded-2xl border border-white/[.08] bg-white/[.025]" />
+        <div className="h-44 animate-pulse rounded-3xl border border-border-subtle bg-surface-glass/40 backdrop-blur-md" />
         <span className="sr-only">Loading portfolio sections</span>
       </Container>
     </div>
@@ -50,3 +64,4 @@ function SectionLoadingFallback() {
 }
 
 export default App;
+

@@ -4,6 +4,7 @@ import { cloneElement, useCallback, useEffect, useRef, useState } from "react";
 import { GitHubCalendar } from "react-github-calendar";
 import Container from "../components/common/Container";
 import Button from "../components/ui/Button";
+import CountUp from "../components/ui/CountUp";
 import SectionHeading from "../components/ui/SectionHeading";
 import { fadeUp } from "../lib/motion-variants";
 
@@ -33,40 +34,7 @@ const stats: Stat[] = [
   { label: "Longest streak", value: 4, subtitle: "Best run this year", icon: Flame },
 ];
 
-function useAnimatedNumber(value: number, shouldAnimate: boolean, prefersReducedMotion: boolean) {
-  const [displayValue, setDisplayValue] = useState(0);
 
-  useEffect(() => {
-    if (!shouldAnimate) return;
-
-    if (prefersReducedMotion) {
-      setDisplayValue(value);
-      return;
-    }
-
-    const startTime = performance.now();
-    let frameId = 0;
-
-    const animate = (now: number) => {
-      const progress = Math.min((now - startTime) / 800, 1);
-      const easedProgress = 1 - (1 - progress) ** 3;
-      setDisplayValue(Math.round(value * easedProgress));
-
-      if (progress < 1) frameId = requestAnimationFrame(animate);
-    };
-
-    frameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId);
-  }, [prefersReducedMotion, shouldAnimate, value]);
-
-  return displayValue;
-}
-
-function StatValue({ value, shouldAnimate, prefersReducedMotion }: { value: number; shouldAnimate: boolean; prefersReducedMotion: boolean }) {
-  const displayValue = useAnimatedNumber(value, shouldAnimate, prefersReducedMotion);
-
-  return <>{displayValue.toLocaleString()}</>;
-}
 
 function getAdjacentDates(date: string) {
   const baseDate = new Date(`${date}T00:00:00Z`);
@@ -95,17 +63,7 @@ export default function BuildingInPublic() {
   const isSnakeActiveRef = useRef(false);
   const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
   const [snakeMessage, setSnakeMessage] = useState("");
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
-    mediaQuery.addEventListener("change", updatePreference);
-
-    return () => mediaQuery.removeEventListener("change", updatePreference);
-  }, []);
 
   useEffect(() => {
     const element = statsRef.current;
@@ -318,7 +276,12 @@ export default function BuildingInPublic() {
   }, [startSnake, stopSnake]);
 
   return (
-    <motion.section id="building-in-public" initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true, margin: "-100px" }} className="border-y border-white/[.07] bg-[#0b1220]/45 py-24 sm:py-32" aria-labelledby="building-in-public-title">
+    <section
+      id="building-in-public"
+      className="relative border-y border-border-subtle bg-surface/20 py-24 sm:py-32"
+      aria-labelledby="building-in-public-title"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-radial-corner opacity-40" />
       <Container>
         <SectionHeading
           eyebrow="Building in public"
@@ -326,21 +289,32 @@ export default function BuildingInPublic() {
           description="Consistently shipping code, learning in public, and documenting progress through open-source contributions."
         />
 
-        <article
-          className="mt-14 overflow-hidden rounded-xl border border-white/[.09] bg-white/[.025]"
+        <motion.article
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={fadeUp}
+          className="glass-card mt-14 overflow-hidden rounded-3xl border border-border-subtle bg-surface-glass/80 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:border-accent/30"
         >
-          <div className="flex items-center gap-3 border-b border-white/[.08] px-5 py-4 sm:px-6">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[.08] bg-[#050816]/60 text-sky-300">
+          <div className="flex items-center gap-3 border-b border-border-subtle px-6 py-4 sm:px-8">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/20 bg-accent/10 text-accent shadow-inner">
               <GitCommitHorizontal size={18} aria-hidden="true" />
             </span>
             <div>
-              <h3 id="building-in-public-title" className="text-sm font-medium text-slate-100">GitHub Activity</h3>
-              <p className="mt-0.5 text-xs text-slate-500">@{GITHUB_USERNAME}</p>
+              <h3 id="building-in-public-title" className="text-sm font-bold text-text-primary">
+                GitHub Activity
+              </h3>
+              <p className="mt-0.5 text-xs font-medium text-text-muted">@{GITHUB_USERNAME}</p>
             </div>
           </div>
 
-          <div className="p-5 sm:p-6">
-            <div ref={calendarScrollRef} tabIndex={-1} className="github-calendar-scroll relative -mx-5 overflow-x-auto px-5 pb-4 pt-2 sm:-mx-6 sm:px-6" aria-label={`${GITHUB_USERNAME}'s GitHub contribution calendar`}>
+          <div className="p-6 sm:p-8">
+            <div
+              ref={calendarScrollRef}
+              tabIndex={-1}
+              className="github-calendar-scroll relative -mx-6 overflow-x-auto px-6 pb-4 pt-2 sm:-mx-8 sm:px-8"
+              aria-label={`${GITHUB_USERNAME}'s GitHub contribution calendar`}
+            >
               <GitHubCalendar
                 username={GITHUB_USERNAME}
                 year="last"
@@ -352,21 +326,25 @@ export default function BuildingInPublic() {
                 showWeekdayLabels={["mon", "wed", "fri"]}
                 theme={{ dark: ["#172033", "#12324a", "#0e587b", "#0284c7", "#7dd3fc"] }}
                 labels={{ totalCount: "" }}
-                renderBlock={(block, activity) => cloneElement(block, {
-                  className: "github-calendar-cell",
-                  tabIndex: 0,
-                  "aria-label": `${activity.date}: ${activity.count} ${activity.count === 1 ? "contribution" : "contributions"}`,
-                  onPointerEnter: (event) => highlightCalendarInteraction(event.currentTarget, activity.date),
-                  onPointerLeave: (event) => removeCalendarInteraction(event.currentTarget),
-                  onFocus: (event) => {
-                    highlightCalendarInteraction(event.currentTarget, activity.date);
-                    event.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
-                  },
-                  onBlur: (event) => {
-                    event.currentTarget.dispatchEvent(new MouseEvent("mouseleave"));
-                    removeCalendarInteraction(event.currentTarget);
-                  },
-                })}
+                renderBlock={(block, activity) =>
+                  cloneElement(block, {
+                    className: "github-calendar-cell",
+                    tabIndex: 0,
+                    "aria-label": `${activity.date}: ${activity.count} ${activity.count === 1 ? "contribution" : "contributions"}`,
+                    onPointerEnter: (event) =>
+                      highlightCalendarInteraction(event.currentTarget, activity.date),
+                    onPointerLeave: (event) =>
+                      removeCalendarInteraction(event.currentTarget),
+                    onFocus: (event) => {
+                      highlightCalendarInteraction(event.currentTarget, activity.date);
+                      event.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
+                    },
+                    onBlur: (event) => {
+                      event.currentTarget.dispatchEvent(new MouseEvent("mouseleave"));
+                      removeCalendarInteraction(event.currentTarget);
+                    },
+                  })
+                }
                 tooltips={{
                   activity: {
                     text: (activity) => `Date: ${activity.date} · Contributions: ${activity.count}`,
@@ -381,35 +359,55 @@ export default function BuildingInPublic() {
                 }}
                 errorMessage="GitHub activity is currently unavailable."
               />
-              <button ref={snakeHintRef} type="button" onClick={startSnake} className="mt-2 text-[10px] text-slate-600 transition-colors hover:text-cyan-300 focus-visible:text-cyan-300 focus-visible:outline-none">
+              <button
+                ref={snakeHintRef}
+                type="button"
+                onClick={startSnake}
+                className="mt-3 text-[11px] font-medium text-text-muted transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none"
+              >
                 Press S to play
               </button>
-              <p className="sr-only" aria-live="polite">{snakeMessage}</p>
+              <p className="sr-only" aria-live="polite">
+                {snakeMessage}
+              </p>
             </div>
 
             <dl
               ref={statsRef}
-              className="mt-5 grid gap-3 border-t border-white/[.08] pt-5 sm:grid-cols-2 lg:grid-cols-4"
+              className="mt-6 grid gap-4 border-t border-border-subtle/60 pt-6 sm:grid-cols-2 lg:grid-cols-4"
             >
               {stats.map(({ label, value, subtitle, icon: Icon }) => (
-                <div key={label} className="flex min-h-[88px] flex-col rounded-lg border border-white/[.08] bg-[#050816]/35 px-4 py-3">
-                  <dt className="order-2 mt-1 flex items-center gap-2 text-[10px] font-medium uppercase tracking-[.14em] text-slate-400"><Icon size={13} className="text-sky-400" aria-hidden="true" />{label}</dt>
-                  <dd className="order-1 text-2xl font-semibold tracking-[-.03em] text-slate-100">
-                    <StatValue value={value} shouldAnimate={hasEnteredViewport} prefersReducedMotion={prefersReducedMotion} />
+                <div
+                  key={label}
+                  className="glass flex min-h-[92px] flex-col rounded-2xl border border-border-subtle bg-white/[0.025] px-4 py-3.5 backdrop-blur-md transition-all duration-300 hover:border-accent/30 hover:bg-white/[0.05]"
+                >
+                  <dt className="order-2 mt-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                    <Icon size={13} className="text-accent" aria-hidden="true" />
+                    {label}
+                  </dt>
+                  <dd className="order-1 text-2xl font-extrabold tracking-tight text-text-primary">
+                    <CountUp to={value} duration={1.0} />
                   </dd>
-                  <dd className="order-3 mt-1 text-xs text-slate-500">{subtitle}</dd>
+                  <dd className="order-3 mt-1 text-xs text-text-muted/70 font-medium">{subtitle}</dd>
                 </div>
               ))}
             </dl>
 
-            <div className="mt-7 flex justify-end">
-              <Button href={GITHUB_URL} target="_blank" rel="noopener noreferrer" ariaLabel="Follow Suraj Dias on GitHub" variant="secondary">
+            <div className="mt-8 flex justify-end">
+              <Button
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                ariaLabel="Follow Suraj Dias on GitHub"
+                variant="secondary"
+              >
                 Follow on GitHub <ArrowUpRight size={16} aria-hidden="true" />
               </Button>
             </div>
           </div>
-        </article>
+        </motion.article>
       </Container>
-    </motion.section>
+    </section>
   );
 }
+

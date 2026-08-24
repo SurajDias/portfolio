@@ -3,6 +3,9 @@ import type { Transition, Variants } from "motion/react";
 export const entranceDuration = 0.5;
 export const entranceEase = "easeOut";
 
+export const easeReveal = [0.215, 0.61, 0.355, 1] as const; // easeOutCubic preset
+export const springSnappy = { type: "spring", stiffness: 350, damping: 25, mass: 0.5 } as const;
+
 export const entranceTransition = {
   duration: entranceDuration,
   ease: entranceEase,

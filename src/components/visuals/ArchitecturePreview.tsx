@@ -1,8 +1,12 @@
-import { motion } from "motion/react";
+import { motion, useTransform, MotionValue } from "motion/react";
 import useReducedMotion from "../../hooks/useReducedMotion";
 import { fadeUp } from "../../lib/motion-variants";
 
-type Props = { label: string; index: number };
+type Props = {
+  label: string;
+  index: number;
+  scrollProgress?: MotionValue<number>;
+};
 type Point = readonly [number, number];
 
 const ink = "#7dd3fc";
@@ -28,16 +32,30 @@ function Dot({ x, y, active = false }: { x: number; y: number; active?: boolean 
   </g>;
 }
 
-function AutoOps({ reducedMotion }: { reducedMotion: boolean }) {
+function AutoOps({ reducedMotion, scrollProgress }: { reducedMotion: boolean; scrollProgress?: MotionValue<number> }) {
   const links = "M72 65V84 M72 84H132 M72 84H191 M132 84V104 M191 84V104 M132 131V145H161 M191 131V145H161 M161 145V158";
+  
+  const fallbackVal = new MotionValue(0.5);
+  const progressVal = scrollProgress || fallbackVal;
+  
+  const opacityStage1 = useTransform(progressVal, [0, 0.3], [0.4, 1]);
+  const opacityStage2 = useTransform(progressVal, [0.3, 0.65], [0.4, 1]);
+  const opacityStage3 = useTransform(progressVal, [0.65, 0.95], [0.4, 1]);
+
   return <>
     <path d={links} fill="none" stroke={ink} strokeOpacity=".3" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M161 158V169" fill="none" stroke={ink} strokeOpacity=".72" strokeWidth="1.2" strokeLinecap="round" />
     <Box x={42} y={38} width={60} label="Metrics" active />
-    <Box x={102} y={104} width={60} label="Anomaly" active />
-    <Box x={161} y={104} width={60} label="Root cause" active />
-    <Box x={131} y={169} width={60} label="Prediction" active />
-    <Box x={255} y={92} width={63} label="Dashboard" active />
+    <motion.g style={{ opacity: reducedMotion ? 1 : opacityStage1 }}>
+      <Box x={102} y={104} width={60} label="Anomaly" active />
+    </motion.g>
+    <motion.g style={{ opacity: reducedMotion ? 1 : opacityStage2 }}>
+      <Box x={161} y={104} width={60} label="Root cause" active />
+    </motion.g>
+    <motion.g style={{ opacity: reducedMotion ? 1 : opacityStage3 }}>
+      <Box x={131} y={169} width={60} label="Prediction" active />
+      <Box x={255} y={92} width={63} label="Dashboard" active />
+    </motion.g>
     <path d="M191 183H255V119" fill="none" stroke={ink} strokeOpacity=".72" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     <text x="42" y="26" fill="#64748b" fontSize="6.5" letterSpacing="1.1">OBSERVABILITY PIPELINE</text>
     <text x="260" y="78" fill="#64748b" fontSize="6.2" letterSpacing=".7">ACTIVE OUTPUT</text>
@@ -120,9 +138,9 @@ function Churn({ reducedMotion }: { reducedMotion: boolean }) {
 }
 
 /** A distinct, compact system diagram for each project case-study card. */
-export default function ArchitecturePreview({ label, index }: Props) {
+export default function ArchitecturePreview({ label, index, scrollProgress }: Props) {
   const reducedMotion = useReducedMotion();
-  let diagram = <AutoOps reducedMotion={reducedMotion} />;
+  let diagram = <AutoOps reducedMotion={reducedMotion} scrollProgress={scrollProgress} />;
   if (index === 1) diagram = <PlacementPilot reducedMotion={reducedMotion} />;
   if (index === 2) diagram = <MiniCompiler reducedMotion={reducedMotion} />;
   if (index === 3) diagram = <Churn reducedMotion={reducedMotion} />;
@@ -146,3 +164,4 @@ export default function ArchitecturePreview({ label, index }: Props) {
     </div>
   );
 }
+

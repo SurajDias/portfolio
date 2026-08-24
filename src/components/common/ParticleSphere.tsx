@@ -10,7 +10,7 @@ type SpherePoint = {
   alpha: number;
 };
 
-const POINT_COUNT = 520;
+const POINT_COUNT = 240;
 const ROTATION_DURATION = 75_000;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
