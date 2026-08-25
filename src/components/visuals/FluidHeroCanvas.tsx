@@ -93,11 +93,12 @@ function fluidSimulation(
   onReady?: (triggerBurst: () => void) => void
 ) {
   const isMobile = isMobileDevice();
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
 
   // Engine Config
   const config = {
-    SIM_RESOLUTION: isMobile ? 64 : 128,
-    DYE_RESOLUTION: isMobile ? 512 : 1024,
+    SIM_RESOLUTION: isMobile ? 64 : isDesktop ? 144 : 128,
+    DYE_RESOLUTION: isMobile ? 512 : isDesktop ? 1024 : 768,
     CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1.0,
     VELOCITY_DISSIPATION: 0.2,
