@@ -2,12 +2,18 @@ import { useEffect, useRef, useState } from "react";
 
 interface FluidHeroCanvasProps {
   className?: string;
+  isIntroComplete?: boolean;
 }
 
-export default function FluidHeroCanvas({ className = "" }: FluidHeroCanvasProps) {
+export default function FluidHeroCanvas({
+  className = "",
+  isIntroComplete = true,
+}: FluidHeroCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [webGlSupported, setWebGlSupported] = useState(true);
+  const burstTriggerRef = useRef<(() => void) | null>(null);
+  const burstFiredRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -16,7 +22,17 @@ export default function FluidHeroCanvas({ className = "" }: FluidHeroCanvasProps
     let cleanupFn: (() => void) | undefined;
 
     try {
-      cleanupFn = fluidSimulation(canvas, containerRef.current);
+      cleanupFn = fluidSimulation(
+        canvas,
+        containerRef.current,
+        (triggerBurst) => {
+          burstTriggerRef.current = triggerBurst;
+          if (isIntroComplete && !burstFiredRef.current) {
+            burstFiredRef.current = true;
+            triggerBurst();
+          }
+        }
+      );
       if (!cleanupFn) {
         setWebGlSupported(false);
       }
@@ -29,6 +45,13 @@ export default function FluidHeroCanvas({ className = "" }: FluidHeroCanvasProps
       if (cleanupFn) cleanupFn();
     };
   }, []);
+
+  useEffect(() => {
+    if (isIntroComplete && burstTriggerRef.current && !burstFiredRef.current) {
+      burstFiredRef.current = true;
+      burstTriggerRef.current();
+    }
+  }, [isIntroComplete]);
 
   if (!webGlSupported) {
     return <StaticGradientFallback className={className} />;
@@ -64,7 +87,11 @@ function isMobileDevice() {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
 }
 
-function fluidSimulation(canvas: HTMLCanvasElement, container: HTMLDivElement | null) {
+function fluidSimulation(
+  canvas: HTMLCanvasElement,
+  container: HTMLDivElement | null,
+  onReady?: (triggerBurst: () => void) => void
+) {
   const isMobile = isMobileDevice();
 
   // Engine Config
@@ -1018,7 +1045,11 @@ function fluidSimulation(canvas: HTMLCanvasElement, container: HTMLDivElement | 
 
   // Initialize
   initFramebuffers();
-  triggerLoadBurst();
+  if (onReady) {
+    onReady(triggerLoadBurst);
+  } else {
+    triggerLoadBurst();
+  }
   startLoop();
 
   // Cleanup Teardown Function (returned to useEffect)

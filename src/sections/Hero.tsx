@@ -8,6 +8,7 @@ import { EMAIL, LINKEDIN_URL, RESUME_URL } from "../config/site";
 import { fadeUp, staggerContainer } from "../lib/motion-variants";
 import { cn } from "../lib/theme";
 import KineticTypography from "../components/ui/KineticTypography";
+import { useContactModal } from "../components/common/ContactModal";
 
 const badges = ["Open to internships", "AI", "Linux", "Full Stack"];
 
@@ -76,11 +77,11 @@ function MagneticPrimaryCTA({
   );
 }
 
-function ArchitecturePanel() {
+function ArchitecturePanel({ isIntroComplete = true }: { isIntroComplete?: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 16 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      animate={isIntroComplete ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.98, y: 16 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
       className="relative w-full overflow-hidden rounded-2xl border border-border-subtle bg-surface-glass/80 p-2 shadow-2xl backdrop-blur-xl group hover:border-accent/30 transition-colors duration-300"
     >
@@ -90,14 +91,16 @@ function ArchitecturePanel() {
   );
 }
 
-export default function Hero() {
+export default function Hero({ isIntroComplete = true }: { isIntroComplete?: boolean }) {
+  const { openContactModal } = useContactModal();
+
   return (
     <section
       id="top"
       className="relative isolate flex min-h-[min(920px,100svh)] items-center overflow-hidden pb-20 pt-32 sm:pt-36 lg:pb-28 lg:pt-36"
     >
       {/* WebGL Fluid Engine Background (Hero-scoped) */}
-      <FluidHeroCanvas className="z-0" />
+      <FluidHeroCanvas className="z-0" isIntroComplete={isIntroComplete} />
       {/* Dark gradient scrim layer for text legibility over fluid splats */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-background/50 via-background/65 to-background" />
 
@@ -117,7 +120,7 @@ export default function Hero() {
           <div className="grid items-center gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16">
             <motion.div
               initial="hidden"
-              animate="visible"
+              animate={isIntroComplete ? "visible" : "hidden"}
               variants={staggerContainer}
               className="flex flex-col items-start"
             >
@@ -135,6 +138,7 @@ export default function Hero() {
                   className="text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] text-text-primary sm:text-7xl lg:text-8xl"
                   staggerMs={90}
                   delayMs={100}
+                  play={isIntroComplete}
                 />
               </div>
 
@@ -145,6 +149,7 @@ export default function Hero() {
                   className="text-lg leading-relaxed text-text-muted sm:text-xl font-normal"
                   staggerMs={35}
                   delayMs={250}
+                  play={isIntroComplete}
                 />
 
                 {/* Group-revealed glass badge pills */}
@@ -203,13 +208,14 @@ export default function Hero() {
                   <ArrowUpRight size={16} className="text-text-muted" />
                 </a>
 
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium text-text-muted transition-colors hover:text-accent"
+                <button
+                  type="button"
+                  onClick={openContactModal}
+                  className="inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium text-text-muted transition-colors hover:text-accent cursor-pointer"
                 >
                   Contact
                   <ArrowUpRight size={15} />
-                </a>
+                </button>
               </motion.div>
 
               <motion.div
@@ -221,7 +227,7 @@ export default function Hero() {
               </motion.div>
             </motion.div>
 
-            <ArchitecturePanel />
+            <ArchitecturePanel isIntroComplete={isIntroComplete} />
           </div>
         </Container>
       </div>

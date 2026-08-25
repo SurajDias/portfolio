@@ -7,6 +7,7 @@ interface KineticTypographyProps {
   as?: "h1" | "h2" | "h3" | "p" | "span";
   staggerMs?: number;
   delayMs?: number;
+  play?: boolean;
 }
 
 export default function KineticTypography({
@@ -15,6 +16,7 @@ export default function KineticTypography({
   as: Component = "h2",
   staggerMs = 45,
   delayMs = 0,
+  play = true,
 }: KineticTypographyProps) {
   const shouldReduceMotion = useReducedMotion();
   const words = text.split(" ");
@@ -29,11 +31,10 @@ export default function KineticTypography({
         <span key={`${word}-${index}`} className="inline-block overflow-hidden pb-1 pr-[0.25em] last:pr-0">
           <motion.span
             initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             transition={{
               ...easeReveal,
-              delay: (delayMs + index * staggerMs) / 1000,
+              delay: play ? (delayMs + index * staggerMs) / 1000 : 0,
             }}
             className="inline-block will-change-transform"
           >

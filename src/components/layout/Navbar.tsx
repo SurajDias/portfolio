@@ -1,19 +1,23 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Container from "../common/Container";
-import { interactionTransition } from "../../lib/motion-variants";
+import { EMAIL, LINKEDIN_URL } from "../../config/site";
+import { easeReveal } from "../../lib/motion-constants";
+import useReducedMotion from "../../hooks/useReducedMotion";
 import { cn } from "../../lib/theme";
+
+import { useContactModal } from "../common/ContactModal";
 
 const links = ["About", "Projects", "Tech Stack", "Certifications", "Contact"];
 
-function MagneticTalkButton({ href, className }: { href: string; className?: string }) {
-  const buttonRef = useRef<HTMLAnchorElement>(null);
+function MagneticTalkButton({ onClick, className }: { onClick?: () => void; className?: string }) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current || window.matchMedia("(pointer: coarse)").matches) return;
     const rect = buttonRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -34,16 +38,17 @@ function MagneticTalkButton({ href, className }: { href: string; className?: str
   };
 
   return (
-    <motion.a
+    <motion.button
       ref={buttonRef}
-      href={href}
+      type="button"
+      onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 350, damping: 25, mass: 0.5 }}
       className={cn(
-        "relative overflow-hidden rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-xs font-semibold tracking-wide text-slate-200 transition-colors duration-200 hover:border-accent/50 hover:text-white shadow-sm",
+        "relative overflow-hidden rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-xs font-semibold tracking-wide text-slate-200 transition-colors duration-200 hover:border-accent/50 hover:text-white shadow-sm cursor-pointer",
         className
       )}
     >
@@ -56,7 +61,42 @@ function MagneticTalkButton({ href, className }: { href: string; className?: str
         />
       )}
       <span className="relative z-10 flex items-center gap-1.5">Let’s talk</span>
-    </motion.a>
+    </motion.button>
+  );
+}
+
+function formatLocalTime(date: Date): string {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  return `${hours}:${formattedMinutes}${ampm}`;
+}
+
+function LocalTimeChip() {
+  const [timeStr, setTimeStr] = useState(() => formatLocalTime(new Date()));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeStr(formatLocalTime(new Date()));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      className="hidden md:inline-flex items-center gap-2 rounded-full border border-border-subtle bg-white/[0.03] px-3.5 py-1.5 text-xs backdrop-blur-md font-mono transition-colors duration-200 hover:border-accent/30"
+      title="Current local time"
+    >
+      <span className="text-[11px] text-text-muted/50 font-normal uppercase tracking-wider">
+        Local time
+      </span>
+      <span className="tabular-nums font-semibold text-text-muted/90">
+        {timeStr}
+      </span>
+    </div>
   );
 }
 
@@ -66,8 +106,9 @@ export default function Navbar() {
   const [active, setActive] = useState("top");
   const [progress, setProgress] = useState(0);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const mobileNavigationRef = useRef<HTMLElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const reducedMotion = useReducedMotion();
+  const { openContactModal } = useContactModal();
 
   useEffect(() => {
     const onScroll = () => {
@@ -96,17 +137,22 @@ export default function Navbar() {
     };
   }, []);
 
+  // Lock page scroll while overlay is open & support Escape key + focus handling
   useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+
     if (!open) {
       restoreFocusRef.current?.focus();
       restoreFocusRef.current = null;
       return;
     }
 
-    const navigation = mobileNavigationRef.current;
-    const focusableSelector = "a[href], button:not([disabled])";
-    const focusableItems = () =>
-      Array.from(navigation?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
     const backgroundRegions = [document.querySelector("main"), document.querySelector("footer")].filter(
       (element): element is HTMLElement => Boolean(element)
     );
@@ -116,31 +162,18 @@ export default function Navbar() {
       element.setAttribute("inert", "");
       element.setAttribute("aria-hidden", "true");
     });
-    requestAnimationFrame(() => focusableItems()[0]?.focus());
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
-        return;
-      }
-      if (event.key !== "Tab") return;
-
-      const items = focusableItems();
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
       }
     };
 
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
       backgroundRegions.forEach((element, index) => {
         element.removeAttribute("inert");
         const previousValue = previousAriaHidden[index];
@@ -157,124 +190,180 @@ export default function Navbar() {
     setOpen((isOpen) => !isOpen);
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      closeMenu();
+    }
+  };
+
   return (
-    <header
-      className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300",
-        scrolled
-          ? "border-b border-border-subtle bg-background/80 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl"
-          : "bg-transparent py-2"
-      )}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 h-[2px] w-full origin-left bg-gradient-to-r from-accent via-sky-400 to-indigo-500 opacity-90 transition-transform duration-100 ease-out"
-        style={{ transform: `scaleX(${progress / 100})` }}
-      />
-      <Container>
-        <div className="flex h-[72px] items-center justify-between">
-          <a
-            href="#top"
-            aria-label="Suraj Dias, back to top"
-            className="group flex items-center gap-0.5 text-sm font-extrabold tracking-[0.2em] text-text-primary transition-colors hover:text-accent"
-          >
-            <span>SURAJ</span>
-            <span className="text-accent transition-transform group-hover:scale-125">.</span>
-          </a>
-
-          <nav
-            aria-label="Main navigation"
-            className="hidden items-center gap-1 rounded-full border border-border-subtle bg-surface-glass/70 px-3 py-1.5 text-sm font-medium text-text-muted shadow-lg backdrop-blur-xl md:flex"
-          >
-            {links.map((link) => {
-              const linkId = link === "Tech Stack" ? "tech" : link.toLowerCase();
-              const current = active === linkId;
-              return (
-                <a
-                  key={link}
-                  href={url(link)}
-                  aria-current={current ? "page" : undefined}
-                  className={cn(
-                    "relative rounded-full px-4 py-1.5 transition-colors duration-200 hover:text-text-primary",
-                    current ? "text-text-primary font-semibold" : "text-text-muted"
-                  )}
-                >
-                  {link}
-                  {current && (
-                    <motion.div
-                      layoutId="activeNavIndicator"
-                      className="absolute inset-0 z-[-1] rounded-full bg-white/10 border border-accent/30 shadow-[0_0_12px_rgba(56,189,248,0.2)]"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </a>
-              );
-            })}
-          </nav>
-
-          <div className="hidden md:block">
-            <MagneticTalkButton href="#contact" />
-          </div>
-
-          <button
-            type="button"
-            ref={menuButtonRef}
-            onClick={toggleMenu}
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            aria-controls="mobile-navigation"
-            className="rounded-lg border border-border-subtle bg-white/[0.03] p-2 text-text-muted transition-colors hover:border-accent/30 hover:bg-white/5 hover:text-text-primary md:hidden"
-          >
-            {open ? <X size={20} /> : <Menu size={21} />}
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {open && (
-            <motion.nav
-              ref={mobileNavigationRef}
-              id="mobile-navigation"
-              aria-label="Mobile navigation"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={interactionTransition}
-              className="mt-2 rounded-2xl border border-border-subtle bg-surface/95 p-4 backdrop-blur-2xl shadow-2xl md:hidden"
+    <>
+      <header
+        className={cn(
+          "fixed top-0 z-50 w-full transition-all duration-300",
+          scrolled
+            ? "border-b border-border-subtle bg-background/80 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+            : "bg-transparent py-2"
+        )}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 h-[2px] w-full origin-left bg-gradient-to-r from-accent via-sky-400 to-indigo-500 opacity-90 transition-transform duration-100 ease-out"
+          style={{ transform: `scaleX(${progress / 100})` }}
+        />
+        <Container>
+          <div className="flex h-[72px] items-center justify-between">
+            <a
+              href="#top"
+              aria-label="Suraj Dias, back to top"
+              className="group flex items-center gap-0.5 text-sm font-extrabold tracking-[0.2em] text-text-primary transition-colors hover:text-accent"
             >
-              <div className="flex flex-col gap-1">
-                {links.map((link) => {
+              <span>SURAJ</span>
+              <span className="text-accent transition-transform group-hover:scale-125">.</span>
+            </a>
+
+            <div className="flex items-center gap-3">
+              <LocalTimeChip />
+
+              <div className="hidden sm:block">
+                <MagneticTalkButton onClick={openContactModal} />
+              </div>
+
+              {/* Full-Screen Menu Trigger Button */}
+              <button
+                type="button"
+                ref={menuButtonRef}
+                onClick={toggleMenu}
+                aria-label={open ? "Close menu" : "Open navigation menu"}
+                aria-expanded={open}
+                aria-controls="fullscreen-navigation"
+                className="group glass inline-flex items-center gap-2 rounded-full border border-border-subtle bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-text-primary transition-all duration-300 hover:border-accent/40 hover:bg-accent/10 hover:text-accent shadow-sm"
+              >
+                <span>Menu</span>
+                <Menu size={16} className="text-accent transition-transform duration-300 group-hover:scale-110" />
+              </button>
+            </div>
+          </div>
+        </Container>
+      </header>
+
+      {/* Full-Screen Overlay Menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="fullscreen-nav-overlay"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            onClick={handleBackdropClick}
+            aria-modal="true"
+            role="dialog"
+            aria-label="Navigation Overlay"
+            className="fixed inset-0 z-[100] flex flex-col justify-between bg-background/96 backdrop-blur-2xl p-6 sm:p-12 lg:p-16 select-none overflow-y-auto"
+          >
+            {/* Top Bar inside Overlay */}
+            <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
+              <a
+                href="#top"
+                onClick={closeMenu}
+                aria-label="Suraj Dias, back to top"
+                className="group flex items-center gap-0.5 text-sm font-extrabold tracking-[0.2em] text-text-primary transition-colors hover:text-accent"
+              >
+                <span>SURAJ</span>
+                <span className="text-accent transition-transform group-hover:scale-125">.</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={closeMenu}
+                aria-label="Close navigation menu"
+                className="group rounded-full border border-border-subtle bg-white/[0.05] p-3 text-text-muted transition-all duration-300 hover:border-accent/40 hover:bg-accent/10 hover:text-accent"
+              >
+                <X size={24} className="transition-transform duration-300 group-hover:rotate-90 text-accent" />
+              </button>
+            </div>
+
+            {/* Main Navigation Links List (Large typography, 1 per line, staggered rise-in) */}
+            <nav
+              id="fullscreen-navigation"
+              aria-label="Full-screen navigation"
+              className="my-auto py-8 max-w-7xl w-full mx-auto"
+            >
+              <ul className="flex flex-col gap-4 sm:gap-6 lg:gap-8">
+                {links.map((link, index) => {
                   const linkId = link === "Tech Stack" ? "tech" : link.toLowerCase();
                   const current = active === linkId;
+                  const isContactLink = link === "Contact";
+
                   return (
-                    <a
-                      onClick={closeMenu}
+                    <motion.li
                       key={link}
-                      href={url(link)}
-                      className={cn(
-                        "flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
-                        current
-                          ? "bg-accent/10 font-semibold text-accent"
-                          : "text-text-muted hover:bg-white/5 hover:text-text-primary"
-                      )}
+                      initial={{ opacity: 0, y: 35 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{
+                        ...easeReveal,
+                        delay: reducedMotion ? 0 : 0.12 + index * 0.07,
+                      }}
                     >
-                      <span>{link}</span>
-                      {current && <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.8)]" />}
-                    </a>
+                      <a
+                        href={isContactLink ? undefined : url(link)}
+                        onClick={(e) => {
+                          closeMenu();
+                          if (isContactLink) {
+                            e.preventDefault();
+                            openContactModal();
+                          }
+                        }}
+                        className={cn(
+                          "group inline-flex items-baseline gap-4 sm:gap-6 text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight transition-colors duration-200 cursor-pointer",
+                          current ? "text-accent" : "text-text-primary hover:text-accent"
+                        )}
+                      >
+                        <span className="font-mono text-sm sm:text-base text-accent/60 group-hover:text-accent transition-colors font-semibold">
+                          0{index + 1}
+                        </span>
+                        <span>{link}</span>
+                        {current && (
+                          <span className="h-2 w-2 rounded-full bg-accent shadow-[0_0_12px_rgba(56,189,248,0.9)] animate-pulse" />
+                        )}
+                      </a>
+                    </motion.li>
                   );
                 })}
+              </ul>
+            </nav>
+
+            {/* Bottom Footer inside Overlay */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border-subtle max-w-7xl w-full mx-auto text-xs text-text-muted font-medium">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Available for opportunities</span>
+              </div>
+
+              <div className="flex items-center gap-6">
                 <a
-                  onClick={closeMenu}
-                  href="#contact"
-                  className="mt-2 flex items-center justify-center rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-center text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/20 hover:text-white"
+                  href={`mailto:${EMAIL}`}
+                  className="transition-colors hover:text-accent flex items-center gap-1"
                 >
-                  Let’s talk
+                  {EMAIL}
+                  <ArrowUpRight size={12} />
+                </a>
+                <a
+                  href={LINKEDIN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-accent flex items-center gap-1"
+                >
+                  LinkedIn
+                  <ArrowUpRight size={12} />
                 </a>
               </div>
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </Container>
-    </header>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
-

@@ -5,6 +5,7 @@ import Container from "../components/common/Container";
 import { EMAIL } from "../config/site";
 import { fadeUp } from "../lib/motion-variants";
 import { cn } from "../lib/theme";
+import { useContactModal } from "../components/common/ContactModal";
 
 function MagneticButton({
   children,
@@ -46,8 +47,8 @@ function MagneticButton({
 
   const baseStyles =
     variant === "primary"
-      ? "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-slate-950 transition-all duration-300 hover:bg-sky-300 shadow-[0_0_24px_rgba(56,189,248,0.35)] hover:shadow-[0_0_36px_rgba(56,189,248,0.55)]"
-      : "glass relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-6 py-3.5 text-sm font-medium text-text-primary transition-all duration-300 hover:border-accent/40 hover:bg-white/10 hover:text-white";
+      ? "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-slate-950 transition-all duration-300 hover:bg-sky-300 shadow-[0_0_24px_rgba(56,189,248,0.35)] hover:shadow-[0_0_36px_rgba(56,189,248,0.55)] cursor-pointer"
+      : "glass relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-6 py-3.5 text-sm font-medium text-text-primary transition-all duration-300 hover:border-accent/40 hover:bg-white/10 hover:text-white cursor-pointer";
 
   if (href) {
     return (
@@ -102,6 +103,7 @@ function MagneticButton({
 export default function Contact() {
   const [copied, setCopied] = useState(false);
   const resetTimeout = useRef<number | undefined>(undefined);
+  const { openContactModal } = useContactModal();
 
   useEffect(() => () => window.clearTimeout(resetTimeout.current), []);
 
@@ -155,7 +157,7 @@ export default function Contact() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3.5 shrink-0">
-              <MagneticButton href={`mailto:${EMAIL}`} variant="primary">
+              <MagneticButton onClick={openContactModal} variant="primary">
                 <Mail size={16} /> Start a conversation <ArrowUpRight size={16} />
               </MagneticButton>
 

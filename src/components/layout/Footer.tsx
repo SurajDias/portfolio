@@ -1,8 +1,11 @@
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Mail } from "lucide-react";
 import Container from "../common/Container";
 import { EMAIL } from "../../config/site";
+import { useContactModal } from "../common/ContactModal";
 
 export default function Footer() {
+  const { openContactModal } = useContactModal();
+
   return (
     <footer className="border-t border-border-subtle/80 bg-background/50 backdrop-blur-md py-8">
       <Container>
@@ -10,9 +13,17 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} Suraj Dias. Built with intent.</p>
 
           <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={openContactModal}
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-accent cursor-pointer"
+            >
+              <Mail size={13} />
+              <span>Contact</span>
+            </button>
             <a
               href={`mailto:${EMAIL}`}
-              className="transition-colors hover:text-accent"
+              className="transition-colors hover:text-accent hidden sm:inline"
             >
               {EMAIL}
             </a>

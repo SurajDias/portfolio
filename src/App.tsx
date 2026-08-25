@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { MotionConfig } from "motion/react";
 import Background from "./components/common/Background";
 import CursorSpotlight from "./components/common/CursorSpotlight";
@@ -10,6 +10,7 @@ import Navbar from "./components/layout/Navbar";
 import Hero from "./sections/Hero";
 import { entranceTransition } from "./lib/motion-variants";
 import useSmoothScroll from "./hooks/useSmoothScroll";
+import { ContactModalProvider } from "./components/common/ContactModal";
 
 const Projects = lazy(() => import("./sections/Projects"));
 const TechStack = lazy(() => import("./sections/TechStack"));
@@ -20,34 +21,37 @@ const Contact = lazy(() => import("./sections/Contact"));
 
 function App() {
   useSmoothScroll();
+  const [isIntroComplete, setIsIntroComplete] = useState(false);
 
   return (
     <MotionConfig reducedMotion="user" transition={entranceTransition}>
-      <div className="relative overflow-x-clip">
-        <a
-          href="#main-content"
-          className="sr-only fixed left-4 top-4 z-[60] rounded-full bg-accent px-4 py-2 text-sm font-semibold text-slate-950 focus:not-sr-only focus:outline-none"
-        >
-          Skip to content
-        </a>
-        <IntroSequence />
-        <Background />
-        <CursorSpotlight />
-        <CustomCursor />
-        <Navbar />
-        <main id="main-content">
-          <Hero />
-          <Suspense fallback={<SectionLoadingFallback />}>
-            <Projects />
-            <TechStack />
-            <Certifications />
-            <BuildingInPublic />
-            <About />
-            <Contact />
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
+      <ContactModalProvider>
+        <div className="relative overflow-x-clip">
+          <a
+            href="#main-content"
+            className="sr-only fixed left-4 top-4 z-[60] rounded-full bg-accent px-4 py-2 text-sm font-semibold text-slate-950 focus:not-sr-only focus:outline-none"
+          >
+            Skip to content
+          </a>
+          <IntroSequence onComplete={() => setIsIntroComplete(true)} />
+          <Background />
+          <CursorSpotlight />
+          <CustomCursor />
+          <Navbar />
+          <main id="main-content">
+            <Hero isIntroComplete={isIntroComplete} />
+            <Suspense fallback={<SectionLoadingFallback />}>
+              <Projects />
+              <TechStack />
+              <Certifications />
+              <BuildingInPublic />
+              <About />
+              <Contact />
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </ContactModalProvider>
     </MotionConfig>
   );
 }
