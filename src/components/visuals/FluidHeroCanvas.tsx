@@ -93,17 +93,16 @@ function fluidSimulation(
   onReady?: (triggerBurst: () => void) => void
 ) {
   const isMobile = isMobileDevice();
-  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
 
   // Engine Config
   const config = {
-    SIM_RESOLUTION: isMobile ? 64 : isDesktop ? 144 : 128,
-    DYE_RESOLUTION: isMobile ? 512 : isDesktop ? 1024 : 768,
+    SIM_RESOLUTION: isMobile ? 64 : 128,
+    DYE_RESOLUTION: isMobile ? 512 : 1024,
     CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1.0,
     VELOCITY_DISSIPATION: 0.2,
     PRESSURE: 0.8,
-    PRESSURE_ITERATIONS: 20,
+    PRESSURE_ITERATIONS: 14,
     CURL: 30,
     SPLAT_RADIUS: 0.25,
     SPLAT_FORCE: 6000,
@@ -757,6 +756,15 @@ function fluidSimulation(
     return radius;
   }
 
+  function getDensityMultiplier() {
+    if (isMobile) return 1.0; // Mobile branch completely untouched
+    const phoneBaselineArea = 400 * 850; // ~340,000 px^2 phone baseline
+    const currentArea = canvas.clientWidth * canvas.clientHeight;
+    if (currentArea <= 0) return 1.0;
+    const rawMultiplier = currentArea / phoneBaselineArea;
+    return Math.min(Math.max(rawMultiplier, 1.0), 1.8);
+  }
+
   function multipleSplats(amount: number) {
     for (let i = 0; i < amount; i++) {
       const color = generateColor();
@@ -771,14 +779,19 @@ function fluidSimulation(
     }
   }
 
-  // Load burst logic
+  // Load burst logic with area-scaled density
   function triggerLoadBurst() {
-    multipleSplats(34);
-    // Queue 8 waves with slight stagger
-    for (let wave = 0; wave < 8; wave++) {
+    const multiplier = getDensityMultiplier();
+    const initialSplats = Math.round(34 * multiplier);
+    const waveCount = 8;
+    const splatsPerWave = 4;
+
+    multipleSplats(initialSplats);
+
+    for (let wave = 0; wave < waveCount; wave++) {
       setTimeout(() => {
         if (!isStopped) {
-          multipleSplats(4);
+          multipleSplats(splatsPerWave);
         }
       }, wave * 180);
     }
@@ -790,33 +803,36 @@ function fluidSimulation(
   const ORBIT_START_DELAY = 1000;
   let lastUserInteractionTime = Date.now();
   let orbitAngle = 0;
+  let autoOrbitFrame = 0;
 
   function updateAutoOrbit(dt: number) {
     if (isMobile) return; // Skip auto orbit on mobile as per spec guardrails
     if (Date.now() - lastUserInteractionTime < ORBIT_START_DELAY) return;
 
-    orbitAngle += dt * ORBIT_SPEED;
-    const breathingRadius = ORBIT_RADIUS + Math.sin(orbitAngle * 1.5) * 0.04;
+    autoOrbitFrame++;
+    if (autoOrbitFrame % 2 !== 0) return; // Throttle splat generation to 30 FPS to save CPU overhead
 
+    orbitAngle += dt * ORBIT_SPEED * 2.0;
+    const aspect = canvas.width / canvas.height;
     const centerX = 0.5;
     const centerY = 0.5;
-    const aspect = canvas.width / canvas.height;
 
-    const x = centerX + Math.cos(orbitAngle) * breathingRadius;
-    const y = centerY + Math.sin(orbitAngle) * breathingRadius * (aspect > 1 ? aspect : 1);
+    // Orbit 1: Primary outer orbit
+    const breathingRadius1 = ORBIT_RADIUS + Math.sin(orbitAngle * 1.5) * 0.04;
+    const x1 = centerX + Math.cos(orbitAngle) * breathingRadius1;
+    const y1 = centerY + Math.sin(orbitAngle) * breathingRadius1 * (aspect > 1 ? aspect : 1);
+    const prevX1 = centerX + Math.cos(orbitAngle - dt * ORBIT_SPEED) * breathingRadius1;
+    const prevY1 = centerY + Math.sin(orbitAngle - dt * ORBIT_SPEED) * breathingRadius1 * (aspect > 1 ? aspect : 1);
+    const dx1 = (x1 - prevX1) * config.SPLAT_FORCE * 0.5;
+    const dy1 = (y1 - prevY1) * config.SPLAT_FORCE * 0.5;
 
-    const prevX = centerX + Math.cos(orbitAngle - dt * ORBIT_SPEED) * breathingRadius;
-    const prevY = centerY + Math.sin(orbitAngle - dt * ORBIT_SPEED) * breathingRadius * (aspect > 1 ? aspect : 1);
+    const color1 = generateColor();
+    color1.r *= 6.0;
+    color1.g *= 6.0;
+    color1.b *= 6.0;
+    splat(x1, y1, dx1, dy1, color1);
 
-    const dx = (x - prevX) * config.SPLAT_FORCE * 0.5;
-    const dy = (y - prevY) * config.SPLAT_FORCE * 0.5;
 
-    const color = generateColor();
-    color.r *= 6.0;
-    color.g *= 6.0;
-    color.b *= 6.0;
-
-    splat(x, y, dx, dy, color);
   }
 
   // Render & Physics Loop
