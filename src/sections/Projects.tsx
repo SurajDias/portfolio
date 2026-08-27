@@ -59,6 +59,7 @@ function FlagshipProjectCard({
 }) {
   const cardRef = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
+  const repoUrl: string | undefined = project.repoUrl;
 
   const { scrollYProgress } = useScroll({
     target: cardRef,
@@ -150,18 +151,28 @@ function FlagshipProjectCard({
             </div>
 
             <div className="flex items-center gap-4 text-xs">
-              <span
-                aria-label={`${project.name} private repository`}
-                className="inline-flex items-center gap-1.5 text-text-muted/60"
-              >
-                <GitBranch size={13} className="text-text-muted/40" /> Private repository
-              </span>
-              <span
-                aria-label={`${project.name} demo unavailable`}
-                className="inline-flex items-center gap-1.5 text-text-muted/60"
-              >
-                <ArrowUpRight size={13} className="text-text-muted/40" /> Demo unavailable
-              </span>
+              {repoUrl ? (
+                <a
+                  href={repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${project.name} repository on GitHub`}
+                  className="group/link inline-flex items-center gap-1.5 font-semibold text-text-primary transition-colors hover:text-accent"
+                >
+                  <GitBranch size={13} className="text-accent" /> Repository
+                  <ArrowUpRight
+                    size={13}
+                    className="transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                  />
+                </a>
+              ) : (
+                <span
+                  aria-label={`${project.name} private repository`}
+                  className="inline-flex items-center gap-1.5 text-text-muted/60"
+                >
+                  <GitBranch size={13} className="text-text-muted/40" /> Private repository
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -179,6 +190,7 @@ function BentoProjectCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const reducedMotion = useReducedMotion();
+  const repoUrl: string | undefined = project.repoUrl;
   const spotlightX = useMotionValue(0);
   const spotlightY = useMotionValue(0);
   const spotlightOpacity = useMotionValue(0);
@@ -277,13 +289,26 @@ function BentoProjectCard({
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-text-muted/60">
-          <span className="inline-flex items-center gap-1">
-            <GitBranch size={12} className="text-text-muted/40" /> Private repo
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <ArrowUpRight size={12} className="text-text-muted/40" /> Demo unavailable
-          </span>
+        <div className="flex flex-wrap items-center gap-3 text-[11px]">
+          {repoUrl ? (
+            <a
+              href={repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${project.name} repository on GitHub`}
+              className="group/link inline-flex items-center gap-1 font-semibold text-text-primary transition-colors hover:text-accent"
+            >
+              <GitBranch size={12} className="text-accent" /> Repository
+              <ArrowUpRight
+                size={12}
+                className="transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+              />
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-text-muted/60">
+              <GitBranch size={12} className="text-text-muted/40" /> Private repo
+            </span>
+          )}
         </div>
       </div>
     </motion.article>
@@ -309,4 +334,3 @@ function Detail({
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Loader2, Send, X } from "lucide-react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { EMAIL } from "../../config/site";
 import useReducedMotion from "../../hooks/useReducedMotion";
 
 interface ContactModalContextType {
@@ -44,6 +45,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Lock scroll when open & handle Escape key
   useEffect(() => {
@@ -78,20 +80,45 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
         setMessage("");
         setIsSubmitting(false);
         setIsSuccess(false);
+        setSubmitError(null);
       }, 400);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    setSubmitError(null);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "4963db65-11e4-4718-bdda-85b66874efe3",
+          name,
+          email,
+          message,
+        }),
+      });
+      const result = (await response.json()) as { success?: boolean };
+
+      if (!response.ok || !result.success) {
+        throw new Error("Web3Forms submission failed");
+      }
+
       setIsSubmitting(false);
       setIsSuccess(true);
-    }, 1100);
+    } catch {
+      setIsSubmitting(false);
+      setSubmitError(`Something went wrong — please email me directly at ${EMAIL}.`);
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -179,6 +206,14 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {submitError && (
+                    <p
+                      role="alert"
+                      className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm leading-relaxed text-red-200"
+                    >
+                      {submitError}
+                    </p>
+                  )}
                   <div>
                     <label
                       htmlFor="modal-name"
@@ -188,6 +223,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     </label>
                     <input
                       id="modal-name"
+                      name="name"
                       type="text"
                       required
                       value={name}
@@ -206,6 +242,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     </label>
                     <input
                       id="modal-email"
+                      name="email"
                       type="email"
                       required
                       value={email}
@@ -224,6 +261,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     </label>
                     <textarea
                       id="modal-message"
+                      name="message"
                       required
                       rows={4}
                       value={message}
